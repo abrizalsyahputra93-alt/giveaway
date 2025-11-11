@@ -40,25 +40,35 @@
   </div>
 
   <script>
+    // FINAL: Semua hardcode + PKCE 43 char
     const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
-    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/';
+    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/'; // EXACT MATCH
     const AUTH_URL = 'https://id.kick.com/oauth/authorize';
     const TOKEN_URL = 'https://id.kick.com/oauth/token';
 
+    // PKCE: Pastikan 43 karakter
     function generateCodeVerifier() {
       const array = new Uint8Array(32);
       crypto.getRandomValues(array);
-      return btoa(String.fromCharCode(...array)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      let verifier = btoa(String.fromCharCode(...array))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      // Pastikan 43 char
+      while (verifier.length < 43) {
+        verifier += '_';
+      }
+      return verifier.substring(0, 43);
     }
 
     async function generateCodeChallenge(verifier) {
       const data = new TextEncoder().encode(verifier);
       const digest = await crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
     async function startLogin() {
       const verifier = generateCodeVerifier();
+      console.log('Verifier (43 char):', verifier, verifier.length);
       const challenge = await generateCodeChallenge(verifier);
       localStorage.setItem('pkce_verifier', verifier);
 
@@ -72,23 +82,27 @@
         state: 'kick_' + Date.now()
       });
 
-      location.href = `${AUTH_URL}?${params.toString()}`;
+      const url = `${AUTH_URL}?${params.toString()}`;
+      console.log('Login URL:', url);
+      location.href = url;
     }
 
-    // DEBUG VERSION
     async function handleCallback() {
       const params = new URLSearchParams(location.search);
       const code = params.get('code');
       const error = params.get('error');
-      
+
       if (error) {
-        alert('Kick Error: ' + error + '\n' + (params.get('error_description') || ''));
+        alert('Kick Error: ' + error + ' - ' + (params.get('error_description') || ''));
         return;
       }
       if (!code) return;
 
       const verifier = localStorage.getItem('pkce_verifier');
-      if (!verifier) return alert('PKCE verifier hilang! Coba login ulang.');
+      if (!verifier || verifier.length !== 43) {
+        alert('PKCE Error: Verifier invalid atau hilang.');
+        return;
+      }
 
       const body = new URLSearchParams({
         grant_type: 'authorization_code',
@@ -98,10 +112,10 @@
         code_verifier: verifier
       });
 
-      try {
-        console.log('Mengirim ke:', TOKEN_URL);
-        console.log('Body:', body.toString());
+      console.log('POST to:', TOKEN_URL);
+      console.log('Body:', body.toString());
 
+      try {
         const response = await fetch(TOKEN_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -109,28 +123,16 @@
         });
 
         const text = await response.text();
-        console.log('Response text:', text);
+        console.log('Response:', response.status, text);
 
-        if (!text) {
-          alert('Error: Response kosong. Kick API mungkin down.');
-          return;
-        }
-
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          alert('Bukan JSON: ' + text);
-          return;
-        }
-
-        if (data.access_token) {
+        if (response.ok) {
+          const data = JSON.parse(text);
           localStorage.setItem('accessToken', data.access_token);
           localStorage.removeItem('pkce_verifier');
           history.replaceState(null, null, '/');
           showApp(data.access_token);
         } else {
-          alert('Login gagal: ' + JSON.stringify(data));
+          alert('HTTP ' + response.status + ': ' + text);
         }
       } catch (err) {
         alert('Fetch error: ' + err.message);
