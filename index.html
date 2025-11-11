@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KICK GIVEAWAY BOT - 100% JALAN 2025</title>
+    <title>KICK GIVEAWAY - JALAN 100%</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000);min-height:100vh;display:flex;justify-content:center;align-items:center}
         .box{max-width:700px;width:100%;background:#111;padding:80px;border-radius:50px;border:8px solid #00ff9d;box-shadow:0 0 200px #00ff9d;position:relative;overflow:hidden}
-        .glow{position:absolute;inset:-100%;background:radial-gradient(circle at 50% 50%,rgba(0,255,157,0.5),transparent);animation:g 20s infinite}@keyframes g{0%,100%{transform:rotate(0deg)}50%{transform:rotate(180deg)}}
         h1{font-size:7rem;margin:0;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d}
         button{padding:35px 120px;margin:40px;font-size:48px;border:none;border-radius:80px;cursor:pointer;font-weight:bold}
         .login{background:#00ff9d;color:#000;animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
@@ -21,27 +20,24 @@
     </style>
 </head>
 <body>
-<div class="box"><div class="glow"></div>
-    <h1>KICK GIVEAWAY<br><span style="font-size:3.5rem">MALAM INI</span></h1>
+<div class="box">
+    <h1>KICK GIVEAWAY<br>MALAM INI</h1>
 
-    <div id="loginPage">
-        <button class="login" onclick="login()">LOGIN WITH KICK</button>
-    </div>
+    <div id="login"><button class="login" onclick="login()">LOGIN WITH KICK</button></div>
 
-    <div id="dashboard" class="hidden">
+    <div id="dash" class="hidden">
         <h2>Selamat datang!</h2>
-        <h3>Channel: <strong id="channel">loading...</strong></h3>
-        <button class="start" onclick="startBot()">START GIVEAWAY BOT</button>
+        <h3>Channel: <strong id="ch">loading...</strong></h3>
+        <button class="start" onclick="start()">START GIVEAWAY BOT</button>
         
         <h3>Whitelist User</h3>
-        <input id="newUser" placeholder="Username Kick">
-        <button onclick="addWhitelist()">+ Tambah</button>
-        <div id="whitelist" class="wl">Belum ada whitelist</div>
+        <input id="u" placeholder="Username Kick"><button onclick="add()">+ Tambah</button>
+        <div id="wl" class="wl">Belum ada whitelist</div>
         
-        <h3>Peserta: <strong id="total">0</strong></h3>
-        <button class="start" onclick="rollWinner()">ROLL SEKARANG!!</button>
+        <h3>Peserta: <strong id="tot">0</strong></h3>
+        <button class="start" onclick="roll()">ROLL SEKARANG!!</button>
         
-        <h2 id="winner" class="win hidden">SELAMAT <span id="winnerName">?</span> !!!</h2>
+        <h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
         
         <h3>Live Chat Log</h3>
         <div id="log" class="log">Bot siap...</div>
@@ -49,142 +45,110 @@
 </div>
 
 <script>
-// CLIENT ID KAMU
 const CLIENT_ID = "01K9RZ3A2G1PTZ8FSA65ZH3VXZ";
-
-let token = "", chatroomId = "", participants = [], whitelist = JSON.parse(localStorage.getItem("kick_giveaway_wl") || "[]");
-
-async function sha256(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function base64urlEncode(buffer) {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
+const CLIENT_SECRET = "4f1c2575f4d923121cfc0a713d45ee4150b086690f8da472b7f025a47c9cd8f5";
+let token = "", chatroomId = "", participants = [], whitelist = JSON.parse(localStorage.getItem("wl_idkick") || "[]");
 
 function login() {
-    const codeVerifier = base64urlEncode(crypto.getRandomValues(new Uint8Array(64)));
     const state = crypto.randomUUID();
-
-    sha256(codeVerifier).then(codeChallenge => {
-        localStorage.setItem('code_verifier', codeVerifier);
-        localStorage.setItem('state', state);
-
-        const params = new URLSearchParams({
-            response_type: 'code',
-            client_id: CLIENT_ID,
-            redirect_uri: location.origin + '/',
-            scope: 'user:read channel:read chat:read chat:write',
-            state: state,
-            code_challenge: codeChallenge,
-            code_challenge_method: 'S256'
-        });
-
-        location.href = 'https://kick.com/oauth/authorize?' + params.toString();
-    });
+    localStorage.setItem("state", state);
+    location.href = `https://id.kick.com/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin + "/")}&scope=user:read channel:read chat:read chat:write&state=${state}`;
 }
 
 if (location.search) {
     const params = new URLSearchParams(location.search);
-    const code = params.get('code');
-    const state = params.get('state');
+    const code = params.get("code");
+    const state = params.get("state");
 
-    if (code && state === localStorage.getItem('state')) {
+    if (code && state === localStorage.getItem("state")) {
         (async () => {
-            const codeVerifier = localStorage.getItem('code_verifier');
-
-            const tokenResponse = await fetch('https://kick.com/oauth/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("https://id.kick.com/oauth/token", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    grant_type: 'authorization_code',
+                    grant_type: "authorization_code",
                     client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
                     code: code,
-                    code_verifier: codeVerifier,
-                    redirect_uri: location.origin + '/'
+                    redirect_uri: location.origin + "/"
                 })
             });
+            const data = await res.json();
+            token = data.access_token;
 
-            const tokenData = await tokenResponse.json();
-            token = tokenData.access_token;
-
-            const userInfo = await fetch("https://api.kick.com/api/v2/oauth/userinfo", {
+            const me = await fetch("https://api.kick.com/api/v2/oauth/userinfo", {
                 headers: { Authorization: `Bearer ${token}` }
             }).then(r => r.json());
 
-            document.getElementById("channel").textContent = userInfo.preferred_username;
-            chatroomId = userInfo.chatroom_id;
+            document.getElementById("ch").textContent = me.preferred_username;
+            chatroomId = me.chatroom_id;
 
-            document.getElementById("loginPage").classList.add("hidden");
-            document.getElementById("dashboard").classList.remove("hidden");
-            log(`LOGIN SUKSES @${userInfo.preferred_username}! BOT NYALA 100%`);
+            document.getElementById("login").classList.add("hidden");
+            document.getElementById("dash").classList.remove("hidden");
+            log(`<b style="color:#00ff9d;font-size:3rem">TERHUBUNG SUKSES @${me.preferred_username}!</b>`);
+            log("<b style='color:gold'>Connection tab di Kick sudah muncul bro!</b>");
             history.replaceState({}, "", "/");
         })();
     }
 }
 
 function log(t) {
-    const logEl = document.getElementById("log");
-    logEl.innerHTML += t + "<br>";
-    logEl.scrollTop = logEl.scrollHeight;
+    const l = document.getElementById("log");
+    l.innerHTML += t + "<br>";
+    l.scrollTop = l.scrollHeight;
 }
 
-function startBot() {
+function start() {
     const ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId);
     ws.onmessage = e => {
         try {
             const m = JSON.parse(e.data);
             if (m.event === "message") {
                 const u = m.data.sender.username;
-                const msg = m.data.message.content;
-                log(`[${u}] ${msg}`);
-                if (whitelist.includes(u) && msg.toLowerCase().includes("!join")) {
+                const t = m.data.message.content;
+                log(`[${u}] ${t}`);
+                if (whitelist.includes(u) && t.toLowerCase().includes("!join")) {
                     if (!participants.includes(u)) {
                         participants.push(u);
-                        log(`<b style="color:#0f0">JOINED → ${u}</b>`);
-                        document.getElementById("total").textContent = participants.length;
+                        log(`<b style="color:#0f0;font-size:3rem">JOINED → ${u}</b>`);
+                        document.getElementById("tot").textContent = participants.length;
                     }
                 }
             }
         } catch (e) {}
     };
-    log("<b style='color:yellow'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");
+    log("<b style='color:yellow;font-size:4rem'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");
 }
 
-function addWhitelist() {
-    const input = document.getElementById("newUser");
-    const user = input.value.trim();
-    if (user && !whitelist.includes(user)) {
-        whitelist.push(user);
-        input.value = "";
-        localStorage.setItem("kick_giveaway_wl", JSON.stringify(whitelist));
-        updateWhitelist();
+function add() {
+    const u = document.getElementById("u").value.trim();
+    if (u && !whitelist.includes(u)) {
+        whitelist.push(u);
+        localStorage.setItem("wl_idkick", JSON.stringify(whitelist));
+        document.getElementById("u").value = "";
+        updateWL();
     }
 }
 
-function updateWhitelist() {
-    const el = document.getElementById("whitelist");
-    el.innerHTML = whitelist.length === 0 ? "Belum ada whitelist" : whitelist.map(u => `${u} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(x=>x!=='${u}');localStorage.setItem('kick_giveaway_wl',JSON.stringify(whitelist));updateWhitelist()">Hapus</button>`).join("<br>");
+function updateWL() {
+    document.getElementById("wl").innerHTML = whitelist.length === 0 ? "Belum ada whitelist" : whitelist.map(x => `<div style="background:#002;padding:25px;margin:15px;border-radius:25px">${x} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(y=>y!=='${x}');localStorage.setItem('wl_idkick',JSON.stringify(whitelist));updateWL()">Hapus</button></div>`).join('');
 }
 
-function rollWinner() {
+function roll() {
     if (participants.length === 0) return alert("Belum ada peserta!");
-    const winner = participants[Math.floor(Math.random() * participants.length)];
-    document.getElementById("winnerName").textContent = winner;
-    document.getElementById("winner").classList.remove("hidden");
+    const w = participants[Math.floor(Math.random() * participants.length)];
+    document.getElementById("wn").textContent = w;
+    document.getElementById("win").classList.remove("hidden");
     confetti({particleCount: 1500, spread: 180});
     fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`, {
         method: "POST",
         headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-        body: JSON.stringify({ content: `@everyone GILA NIH BRO @${winner} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET!!!` })
+        body: JSON.stringify({ content: `@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET!!!` })
     });
-    log(`<b style="color:gold;font-size:5rem">PEMENANG: @${winner}</b>`);
+    log(`<b style="color:gold;font-size:6rem">PEMENANG: @${w}</b>`);
 }
 
-updateWhitelist();
+updateWL();
 </script>
 </body>
 </html>
