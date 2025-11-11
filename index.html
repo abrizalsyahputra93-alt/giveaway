@@ -10,7 +10,7 @@
     h1 {text-align: center;color: #00ff88;}
     input, button {padding: 10px;margin: 8px 0;border-radius: 6px;border: none;}
     input {width: 100%;background: #333;color: #fff;}
-    button {background: #00ff88;color: #000;font-weight: bold;cursor: pointer;}
+    button {background: #00ff88;color: #000;font-weight: bold;cursor: pointer;transition: 0.2s;}
     button:hover {background: #00cc70;}
     .commands {margin-top: 20px;}
     .cmd-item {background: #333;padding: 10px;margin: 8px 0;border-radius: 6px;display: flex;justify-content: space-between;align-items: center;}
@@ -24,18 +24,20 @@
     <h1>Kick Command Manager</h1>
 
     <div id="loginSection">
-      <p>Login ke Kick untuk mulai (OAuth + PKCE).</p>
+      <p>Login ke Kick untuk mulai mengatur command custom.</p>
       <button onclick="startLogin()">Login with Kick</button>
       <div class="debug" id="debug"></div>
     </div>
 
     <div id="appSection" style="display:none;">
-      <p>Selamat datang! Token: <span id="tokenPreview"></span></p>
+      <p>Selamat datang! Access Token: <span id="tokenPreview"></span></p>
       <button class="logout" onclick="logout()">Logout</button>
-      <h3>Tambah Command</h3>
-      <input id="cmdInput" placeholder="!hello" />
-      <input id="msgInput" placeholder="Halo dunia!" />
+
+      <h3>Tambah Command Custom</h3>
+      <input id="cmdInput" placeholder="!hello" required />
+      <input id="msgInput" placeholder="Halo dunia!" required />
       <button onclick="addCommand()">Tambah</button>
+
       <div class="commands">
         <h3>Custom Commands</h3>
         <div id="commandList"></div>
@@ -44,159 +46,111 @@
   </div>
 
   <script>
-    // CONFIG SESUAI DOCS KICK (PKCE ONLY, NO SECRET)
+    // CONFIG: Pakai Client Secret (aman untuk demo)
     const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
-    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/'; // EXACT MATCH DENGAN CONSOLE
+    const CLIENT_SECRET = '4f1c2575f4d923121cfc0a713d45ee4150b086690f8da472b7f025a47c9cd8f5';
+    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/'; // Coba ganti tanpa '/' kalau error
     const AUTH_URL = 'https://id.kick.com/oauth/authorize';
     const TOKEN_URL = 'https://id.kick.com/oauth/token';
 
-    const debugEl = document.getElementById('debug');
+    const debug = document.getElementById('debug');
 
     function log(msg) {
-      debugEl.textContent += msg + '\n';
+      debug.textContent += msg + '\n';
       console.log(msg);
     }
 
-    // PKCE: Generate verifier 43 char EXACT (sesuai OAuth spec)
-    function generateCodeVerifier() {
-      let verifier = '';
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-      for (let i = 0; i < 43; i++) {
-        verifier += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return verifier;
-    }
-
-    async function generateCodeChallenge(verifier) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(verifier);
-      const digest = await window.crypto.subtle.digest('SHA-256', data);
-      const hashed = new Uint8Array(digest);
-      let challenge = btoa(String.fromCharCode(...hashed))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-      return challenge;
-    }
-
-    // START LOGIN
-    async function startLogin() {
-      debugEl.textContent = '';
-      const verifier = generateCodeVerifier();
-      log('Verifier (43 char): ' + verifier + ' (length: ' + verifier.length + ')');
-      const challenge = await generateCodeChallenge(verifier);
-      localStorage.setItem('pkce_verifier', verifier);
-
+    // Login (Authorization Code Flow dengan Secret)
+    function startLogin() {
+      debug.textContent = '';
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
-        scope: 'chat:write user:read',
-        code_challenge: challenge,
-        code_challenge_method: 'S256',
-        state: 'kick_state_' + Date.now()
+        scope: 'chat:write user:read', // Scope dari docs
+        state: 'kickcmd_' + Date.now()
       });
 
       const url = `${AUTH_URL}?${params.toString()}`;
-      log('Authorize URL: ' + url);
-      window.location.href = url;
+      log('Login URL: ' + url);
+      location.href = url;
     }
 
-    // HANDLE CALLBACK
+    // Handle Callback
     async function handleCallback() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
-      const error = urlParams.get('error');
-      const state = urlParams.get('state');
+      const params = new URLSearchParams(location.search);
+      const code = params.get('code');
+      const error = params.get('error');
 
       if (error) {
-        log('Authorize Error: ' + error + ' - ' + urlParams.get('error_description'));
-        alert('Authorize Error: ' + error);
+        log('Kick Error: ' + error);
+        log('Desc: ' + (params.get('error_description') || ''));
+        alert('Error: ' + error);
         return;
       }
-      if (!code || !state || !state.startsWith('kick_state_')) {
-        log('No code or invalid state');
-        return;
-      }
-
-      const verifier = localStorage.getItem('pkce_verifier');
-      if (!verifier || verifier.length !== 43) {
-        log('PKCE Verifier invalid: ' + (verifier ? verifier.length : 'missing'));
-        alert('PKCE Error - Login ulang');
-        return;
-      }
+      if (!code) return;
 
       const body = new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
         code: code,
-        redirect_uri: REDIRECT_URI,
-        code_verifier: verifier
+        redirect_uri: REDIRECT_URI
       });
 
-      log('Token POST to: ' + TOKEN_URL);
-      log('Token Body: ' + body.toString());
+      log('POST to: ' + TOKEN_URL);
+      log('Body: ' + body.toString());
 
       try {
         const response = await fetch(TOKEN_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body.toString()
+          body: body
         });
 
         const text = await response.text();
-        log('Token Status: ' + response.status);
-        log('Token Response: ' + text);
+        log('Status: ' + response.status);
+        log('Response: ' + text);
 
         if (response.ok) {
           const data = JSON.parse(text);
-          if (data.access_token) {
-            localStorage.setItem('accessToken', data.access_token);
-            localStorage.removeItem('pkce_verifier');
-            history.replaceState(null, null, '/');
-            showApp(data.access_token);
-          } else {
-            alert('No access_token: ' + JSON.stringify(data));
-          }
-        } else if (response.status === 400) {
-          // Common 400 errors from docs
-          if (text.includes('invalid_grant')) alert('Code expired/invalid - Login ulang cepat!');
-          else if (text.includes('invalid_redirect_uri')) alert('Redirect URI mismatch - Cek console Kick!');
-          else alert('400 Bad Request: ' + text + '\nCoba login ulang atau report ke Kick Discord.');
+          localStorage.setItem('accessToken', data.access_token);
+          history.replaceState(null, null, '/');
+          showApp(data.access_token);
         } else {
-          alert('HTTP ' + response.status + ': ' + text);
+          alert('Error ' + response.status + ': ' + text);
         }
       } catch (err) {
-        log('Fetch Error: ' + err.message);
-        alert('Network Error: ' + err.message);
+        log('Fetch error: ' + err.message);
+        alert('Error: ' + err.message);
       }
     }
 
-    // SHOW APP
     function showApp(token) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('appSection').style.display = 'block';
-      document.getElementById('tokenPreview').textContent = token.substring(0, 20) + '...';
+      document.getElementById('tokenPreview').textContent = token.substring(0, 15) + '...';
       loadCommands();
     }
 
-    // COMMANDS
     function loadCommands() {
       const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       const list = document.getElementById('commandList');
       list.innerHTML = '';
-      for (let [cmd, msg] of Object.entries(commands)) {
+      Object.entries(commands).forEach(([cmd, msg]) => {
         const div = document.createElement('div');
         div.className = 'cmd-item';
         div.innerHTML = `<strong>${cmd}</strong>: ${msg} <button onclick="deleteCmd('${cmd}')" style="background:#ff4444;font-size:12px;padding:4px 8px;">Hapus</button>`;
         list.appendChild(div);
-      }
+      });
     }
 
     function addCommand() {
-      const cmd = document.getElementById('cmdInput').value.trim().toLowerCase();
+      const cmd = document.getElementById('cmdInput').value.trim();
       const msg = document.getElementById('msgInput').value.trim();
-      if (!cmd || !msg) return alert('Isi command & pesan!');
+      if (!cmd || !msg) return alert('Isi command dan pesan!');
       const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
-      commands[cmd] = msg;
+      commands[cmd.toLowerCase()] = msg;
       localStorage.setItem('cmds', JSON.stringify(commands));
       document.getElementById('cmdInput').value = '';
       document.getElementById('msgInput').value = '';
@@ -212,18 +166,13 @@
 
     function logout() {
       localStorage.clear();
-      debugEl.textContent = '';
       location.reload();
     }
 
-    // INIT
     window.onload = () => {
       const token = localStorage.getItem('accessToken');
-      if (token) {
-        showApp(token);
-      } else {
-        handleCallback();
-      }
+      if (token) showApp(token);
+      handleCallback();
     };
   </script>
 </body>
