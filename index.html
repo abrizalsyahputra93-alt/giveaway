@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kick Custom Command Manager</title>
+  <title>Kick Command Manager</title>
   <style>
     body {font-family: 'Segoe UI', sans-serif;background: #1a1a1a;color: #fff;margin: 0;padding: 20px;}
     .container {max-width: 600px;margin: auto;background: #252525;padding: 20px;border-radius: 12px;box-shadow: 0 4px 12px rgba(0,0,0,0.3);}
@@ -23,7 +23,7 @@
     <h1>Kick Command Manager</h1>
 
     <div id="loginSection">
-      <p>Login ke Kick untuk mulai mengatur command.</p>
+      <p>Login ke Kick untuk mulai.</p>
       <button onclick="startLogin()">Login with Kick</button>
     </div>
 
@@ -44,33 +44,30 @@
   </div>
 
   <script>
-    // PERBAIKAN: Client ID & Redirect URI
+    // FINAL FIX: Semua hardcode & URL benar
     const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
     const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/';
     const AUTH_URL = 'https://id.kick.com/oauth/authorize';
-    const TOKEN_URL = 'https://id.kick.com/oauth/token';
+    const TOKEN_URL = 'https://id.kick.com/oauth/token'; // BUKAN api.kick.com!
 
-    // PKCE Helper
+    // PKCE
     function generateCodeVerifier() {
       const array = new Uint8Array(32);
       crypto.getRandomValues(array);
-      return btoa(String.fromCharCode(...array))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return btoa(String.fromCharCode(...array)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
     async function generateCodeChallenge(verifier) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(verifier);
+      const data = new TextEncoder().encode(verifier);
       const digest = await crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
     // Login
     async function startLogin() {
       const verifier = generateCodeVerifier();
       const challenge = await generateCodeChallenge(verifier);
-      localStorage.setItem('codeVerifier', verifier);
+      localStorage.setItem('pkce_verifier', verifier);
 
       const params = new URLSearchParams({
         response_type: 'code',
@@ -79,20 +76,20 @@
         scope: 'chat:write user:read',
         code_challenge: challenge,
         code_challenge_method: 'S256',
-        state: 'kickcmd_' + Date.now()
+        state: 'kick_' + Date.now()
       });
 
-      location.href = `${AUTH_URL}?${params}`;
+      location.href = `${AUTH_URL}?${params.toString()}`;
     }
 
     // Handle callback
     async function handleCallback() {
-      const urlParams = new URLSearchParams(location.search);
-      const code = urlParams.get('code');
+      const params = new URLSearchParams(location.search);
+      const code = params.get('code');
       if (!code) return;
 
-      const verifier = localStorage.getItem('codeVerifier');
-      if (!verifier) return alert('PKCE verifier hilang. Coba login ulang.');
+      const verifier = localStorage.getItem('pkce_verifier');
+      if (!verifier) return alert('PKCE error. Coba login ulang.');
 
       try {
         const response = await fetch(TOKEN_URL, {
@@ -110,11 +107,11 @@
         const data = await response.json();
         if (data.access_token) {
           localStorage.setItem('accessToken', data.access_token);
-          localStorage.removeItem('codeVerifier');
+          localStorage.removeItem('pkce_verifier');
           history.replaceState(null, null, '/');
           showApp(data.access_token);
         } else {
-          alert('Gagal login: ' + (data.error || 'Unknown'));
+          alert('Login gagal: ' + JSON.stringify(data));
         }
       } catch (err) {
         alert('Error: ' + err.message);
@@ -129,13 +126,13 @@
     }
 
     function loadCommands() {
-      const commands = JSON.parse(localStorage.getItem('customCommands') || '{}');
+      const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       const list = document.getElementById('commandList');
       list.innerHTML = '';
       Object.entries(commands).forEach(([cmd, msg]) => {
         const div = document.createElement('div');
         div.className = 'cmd-item';
-        div.innerHTML = `<strong>${cmd}</strong>: ${msg} <button onclick="deleteCommand('${cmd}')" style="background:#ff4444;font-size:12px;padding:4px 8px;">Hapus</button>`;
+        div.innerHTML = `<strong>${cmd}</strong>: ${msg} <button onclick="deleteCmd('${cmd}')" style="background:#ff4444;font-size:12px;padding:4px 8px;">Hapus</button>`;
         list.appendChild(div);
       });
     }
@@ -143,29 +140,30 @@
     function addCommand() {
       const cmd = document.getElementById('cmdInput').value.trim();
       const msg = document.getElementById('msgInput').value.trim();
-      if (!cmd || !msg) return alert('Isi command dan pesan!');
+      if (!cmd || !msg) return alert('Isi semua!');
 
-      const commands = JSON.parse(localStorage.getItem('customCommands') || '{}');
+      const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       commands[cmd.toLowerCase()] = msg;
-      localStorage.setItem('customCommands', JSON.stringify(commands));
+      localStorage.setItem('cmds', JSON.stringify(commands));
 
       document.getElementById('cmdInput').value = '';
       document.getElementById('msgInput').value = '';
       loadCommands();
     }
 
-    function deleteCommand(cmd) {
-      const commands = JSON.parse(localStorage.getItem('customCommands') || '{}');
+    function deleteCmd(cmd) {
+      const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       delete commands[cmd];
-      localStorage.setItem('customCommands', JSON.stringify(commands));
+      localStorage.setItem('cmds', JSON.stringify(commands));
       loadCommands();
     }
 
     function logout() {
-      localStorage.removeItem('accessToken');
+      localStorage.clear();
       location.reload();
     }
 
+    // Init
     window.onload = () => {
       const token = localStorage.getItem('accessToken');
       if (token) showApp(token);
