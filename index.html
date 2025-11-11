@@ -16,7 +16,7 @@
     .cmd-item {background: #333;padding: 10px;margin: 8px 0;border-radius: 6px;display: flex;justify-content: space-between;align-items: center;}
     .logout {background: #ff4444;margin-top: 20px;}
     .logout:hover {background: #cc0000;}
-    .debug {background:#333;padding:10px;margin:10px 0;border-radius:6px;font-family:monospace;font-size:12px;max-height:200px;overflow:auto;}
+    .debug {background:#333;padding:10px;margin:10px 0;border-radius:6px;font-family:monospace;font-size:12px;max-height:200px;overflow:auto;white-space: pre-wrap;}
   </style>
 </head>
 <body>
@@ -44,51 +44,28 @@
   </div>
 
   <script>
-    // === CONFIG HARDCODE (PASTI COCOK) ===
+    // === CONFIG (PAKAI CLIENT SECRET) ===
     const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
-    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/'; // EXACT MATCH!
+    const CLIENT_SECRET = '8fe491a2b6fe3949673e9228d824efb477a90de7425c8b8f8a564ecb039a2225'; // DARI SCREENSHOT
+    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/';
     const AUTH_URL = 'https://id.kick.com/oauth/authorize';
     const TOKEN_URL = 'https://id.kick.com/oauth/token';
 
     const debug = document.getElementById('debug');
 
     function log(msg) {
-      debug.innerHTML += msg + '<br>';
+      debug.textContent += msg + '\n';
       console.log(msg);
     }
 
-    // PKCE: 43 karakter
-    function generateCodeVerifier() {
-      const array = new Uint8Array(32);
-      crypto.getRandomValues(array);
-      let verifier = btoa(String.fromCharCode(...array))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      while (verifier.length < 43) verifier += 'A';
-      return verifier.substring(0, 43);
-    }
-
-    async function generateCodeChallenge(verifier) {
-      const data = new TextEncoder().encode(verifier);
-      const digest = await crypto.subtle.digest('SHA-256', data);
-      return btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
-
-    // === LOGIN ===
-    async function startLogin() {
-      debug.innerHTML = '';
-      const verifier = generateCodeVerifier();
-      log('Verifier (43 char): ' + verifier);
-      const challenge = await generateCodeChallenge(verifier);
-      localStorage.setItem('pkce_verifier', verifier);
-
+    // === LOGIN (TANPA PKCE – PAKAI SECRET) ===
+    function startLogin() {
+      debug.textContent = '';
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
         scope: 'chat:write user:read',
-        code_challenge: challenge,
-        code_challenge_method: 'S256',
         state: 'kick_' + Date.now()
       });
 
@@ -105,25 +82,17 @@
 
       if (error) {
         log('Kick Error: ' + error);
-        log('Desc: ' + params.get('error_description'));
         alert('Error: ' + error);
         return;
       }
       if (!code) return;
 
-      const verifier = localStorage.getItem('pkce_verifier');
-      if (!verifier || verifier.length !== 43) {
-        log('PKCE Error: Verifier = ' + verifier);
-        alert('PKCE Error');
-        return;
-      }
-
       const body = new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
         code: code,
-        redirect_uri: REDIRECT_URI,
-        code_verifier: verifier
+        redirect_uri: REDIRECT_URI
       });
 
       log('POST to: ' + TOKEN_URL);
@@ -143,14 +112,13 @@
         if (response.ok) {
           const data = JSON.parse(text);
           localStorage.setItem('accessToken', data.access_token);
-          localStorage.removeItem('pkce_verifier');
           history.replaceState(null, null, '/');
           showApp(data.access_token);
         } else {
           alert('HTTP ' + response.status + '\n' + text);
         }
       } catch (err) {
-        log('Fetch error: ' + err.message);
+        log('Error: ' + err.message);
       }
     }
 
@@ -197,7 +165,6 @@
       location.reload();
     }
 
-    // INIT
     window.onload = () => {
       const token = localStorage.getItem('accessToken');
       if (token) showApp(token);
