@@ -21,21 +21,17 @@
 <body>
   <div class="container">
     <h1>Kick Command Manager</h1>
-
     <div id="loginSection">
       <p>Login ke Kick untuk mulai.</p>
       <button onclick="startLogin()">Login with Kick</button>
     </div>
-
     <div id="appSection" style="display:none;">
       <p>Selamat datang! <span id="tokenPreview"></span></p>
       <button class="logout" onclick="logout()">Logout</button>
-
       <h3>Tambah Command</h3>
       <input id="cmdInput" placeholder="!hello" />
       <input id="msgInput" placeholder="Halo dunia!" />
       <button onclick="addCommand()">Tambah</button>
-
       <div class="commands">
         <h3>Custom Commands</h3>
         <div id="commandList"></div>
@@ -44,13 +40,11 @@
   </div>
 
   <script>
-    // FINAL FIX: Semua hardcode & URL benar
     const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
     const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/';
     const AUTH_URL = 'https://id.kick.com/oauth/authorize';
-    const TOKEN_URL = 'https://id.kick.com/oauth/token'; // BUKAN api.kick.com!
+    const TOKEN_URL = 'https://id.kick.com/oauth/token';
 
-    // PKCE
     function generateCodeVerifier() {
       const array = new Uint8Array(32);
       crypto.getRandomValues(array);
@@ -63,7 +57,6 @@
       return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
-    // Login
     async function startLogin() {
       const verifier = generateCodeVerifier();
       const challenge = await generateCodeChallenge(verifier);
@@ -82,29 +75,55 @@
       location.href = `${AUTH_URL}?${params.toString()}`;
     }
 
-    // Handle callback
+    // DEBUG VERSION
     async function handleCallback() {
       const params = new URLSearchParams(location.search);
       const code = params.get('code');
+      const error = params.get('error');
+      
+      if (error) {
+        alert('Kick Error: ' + error + '\n' + (params.get('error_description') || ''));
+        return;
+      }
       if (!code) return;
 
       const verifier = localStorage.getItem('pkce_verifier');
-      if (!verifier) return alert('PKCE error. Coba login ulang.');
+      if (!verifier) return alert('PKCE verifier hilang! Coba login ulang.');
+
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: CLIENT_ID,
+        code: code,
+        redirect_uri: REDIRECT_URI,
+        code_verifier: verifier
+      });
 
       try {
+        console.log('Mengirim ke:', TOKEN_URL);
+        console.log('Body:', body.toString());
+
         const response = await fetch(TOKEN_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            client_id: CLIENT_ID,
-            code: code,
-            redirect_uri: REDIRECT_URI,
-            code_verifier: verifier
-          })
+          body: body
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        console.log('Response text:', text);
+
+        if (!text) {
+          alert('Error: Response kosong. Kick API mungkin down.');
+          return;
+        }
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          alert('Bukan JSON: ' + text);
+          return;
+        }
+
         if (data.access_token) {
           localStorage.setItem('accessToken', data.access_token);
           localStorage.removeItem('pkce_verifier');
@@ -114,7 +133,7 @@
           alert('Login gagal: ' + JSON.stringify(data));
         }
       } catch (err) {
-        alert('Error: ' + err.message);
+        alert('Fetch error: ' + err.message);
       }
     }
 
@@ -145,7 +164,6 @@
       const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       commands[cmd.toLowerCase()] = msg;
       localStorage.setItem('cmds', JSON.stringify(commands));
-
       document.getElementById('cmdInput').value = '';
       document.getElementById('msgInput').value = '';
       loadCommands();
@@ -163,7 +181,6 @@
       location.reload();
     }
 
-    // Init
     window.onload = () => {
       const token = localStorage.getItem('accessToken');
       if (token) showApp(token);
