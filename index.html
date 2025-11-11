@@ -24,13 +24,13 @@
     <h1>Kick Command Manager</h1>
 
     <div id="loginSection">
-      <p>Login ke Kick untuk mulai.</p>
+      <p>Login ke Kick untuk mulai (OAuth + PKCE).</p>
       <button onclick="startLogin()">Login with Kick</button>
       <div class="debug" id="debug"></div>
     </div>
 
     <div id="appSection" style="display:none;">
-      <p>Selamat datang! <span id="tokenPreview"></span></p>
+      <p>Selamat datang! Token: <span id="tokenPreview"></span></p>
       <button class="logout" onclick="logout()">Logout</button>
       <h3>Tambah Command</h3>
       <input id="cmdInput" placeholder="!hello" />
@@ -44,107 +44,157 @@
   </div>
 
   <script>
-    // === CONFIG (PAKAI CLIENT SECRET) ===
+    // CONFIG SESUAI DOCS KICK (PKCE ONLY, NO SECRET)
     const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
-    const CLIENT_SECRET = '8fe491a2b6fe3949673e9228d824efb477a90de7425c8b8f8a564ecb039a2225'; // DARI SCREENSHOT
-    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/';
+    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/'; // EXACT MATCH DENGAN CONSOLE
     const AUTH_URL = 'https://id.kick.com/oauth/authorize';
     const TOKEN_URL = 'https://id.kick.com/oauth/token';
 
-    const debug = document.getElementById('debug');
+    const debugEl = document.getElementById('debug');
 
     function log(msg) {
-      debug.textContent += msg + '\n';
+      debugEl.textContent += msg + '\n';
       console.log(msg);
     }
 
-    // === LOGIN (TANPA PKCE – PAKAI SECRET) ===
-    function startLogin() {
-      debug.textContent = '';
+    // PKCE: Generate verifier 43 char EXACT (sesuai OAuth spec)
+    function generateCodeVerifier() {
+      let verifier = '';
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+      for (let i = 0; i < 43; i++) {
+        verifier += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return verifier;
+    }
+
+    async function generateCodeChallenge(verifier) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(verifier);
+      const digest = await window.crypto.subtle.digest('SHA-256', data);
+      const hashed = new Uint8Array(digest);
+      let challenge = btoa(String.fromCharCode(...hashed))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+      return challenge;
+    }
+
+    // START LOGIN
+    async function startLogin() {
+      debugEl.textContent = '';
+      const verifier = generateCodeVerifier();
+      log('Verifier (43 char): ' + verifier + ' (length: ' + verifier.length + ')');
+      const challenge = await generateCodeChallenge(verifier);
+      localStorage.setItem('pkce_verifier', verifier);
+
       const params = new URLSearchParams({
         response_type: 'code',
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
         scope: 'chat:write user:read',
-        state: 'kick_' + Date.now()
+        code_challenge: challenge,
+        code_challenge_method: 'S256',
+        state: 'kick_state_' + Date.now()
       });
 
       const url = `${AUTH_URL}?${params.toString()}`;
-      log('Login URL: ' + url);
-      location.href = url;
+      log('Authorize URL: ' + url);
+      window.location.href = url;
     }
 
-    // === CALLBACK ===
+    // HANDLE CALLBACK
     async function handleCallback() {
-      const params = new URLSearchParams(location.search);
-      const code = params.get('code');
-      const error = params.get('error');
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const error = urlParams.get('error');
+      const state = urlParams.get('state');
 
       if (error) {
-        log('Kick Error: ' + error);
-        alert('Error: ' + error);
+        log('Authorize Error: ' + error + ' - ' + urlParams.get('error_description'));
+        alert('Authorize Error: ' + error);
         return;
       }
-      if (!code) return;
+      if (!code || !state || !state.startsWith('kick_state_')) {
+        log('No code or invalid state');
+        return;
+      }
+
+      const verifier = localStorage.getItem('pkce_verifier');
+      if (!verifier || verifier.length !== 43) {
+        log('PKCE Verifier invalid: ' + (verifier ? verifier.length : 'missing'));
+        alert('PKCE Error - Login ulang');
+        return;
+      }
 
       const body = new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
         code: code,
-        redirect_uri: REDIRECT_URI
+        redirect_uri: REDIRECT_URI,
+        code_verifier: verifier
       });
 
-      log('POST to: ' + TOKEN_URL);
-      log('Body: ' + body.toString());
+      log('Token POST to: ' + TOKEN_URL);
+      log('Token Body: ' + body.toString());
 
       try {
         const response = await fetch(TOKEN_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body
+          body: body.toString()
         });
 
         const text = await response.text();
-        log('Status: ' + response.status);
-        log('Response: ' + text);
+        log('Token Status: ' + response.status);
+        log('Token Response: ' + text);
 
         if (response.ok) {
           const data = JSON.parse(text);
-          localStorage.setItem('accessToken', data.access_token);
-          history.replaceState(null, null, '/');
-          showApp(data.access_token);
+          if (data.access_token) {
+            localStorage.setItem('accessToken', data.access_token);
+            localStorage.removeItem('pkce_verifier');
+            history.replaceState(null, null, '/');
+            showApp(data.access_token);
+          } else {
+            alert('No access_token: ' + JSON.stringify(data));
+          }
+        } else if (response.status === 400) {
+          // Common 400 errors from docs
+          if (text.includes('invalid_grant')) alert('Code expired/invalid - Login ulang cepat!');
+          else if (text.includes('invalid_redirect_uri')) alert('Redirect URI mismatch - Cek console Kick!');
+          else alert('400 Bad Request: ' + text + '\nCoba login ulang atau report ke Kick Discord.');
         } else {
-          alert('HTTP ' + response.status + '\n' + text);
+          alert('HTTP ' + response.status + ': ' + text);
         }
       } catch (err) {
-        log('Error: ' + err.message);
+        log('Fetch Error: ' + err.message);
+        alert('Network Error: ' + err.message);
       }
     }
 
+    // SHOW APP
     function showApp(token) {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('appSection').style.display = 'block';
-      document.getElementById('tokenPreview').textContent = token.substring(0, 15) + '...';
+      document.getElementById('tokenPreview').textContent = token.substring(0, 20) + '...';
       loadCommands();
     }
 
+    // COMMANDS
     function loadCommands() {
       const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       const list = document.getElementById('commandList');
       list.innerHTML = '';
-      Object.entries(commands).forEach(([cmd, msg]) => {
+      for (let [cmd, msg] of Object.entries(commands)) {
         const div = document.createElement('div');
         div.className = 'cmd-item';
-        div.innerHTML = `<strong>${cmd}</strong>: ${msg} <button onclick="deleteCmd('${cmd}')">Hapus</button>`;
+        div.innerHTML = `<strong>${cmd}</strong>: ${msg} <button onclick="deleteCmd('${cmd}')" style="background:#ff4444;font-size:12px;padding:4px 8px;">Hapus</button>`;
         list.appendChild(div);
-      });
+      }
     }
 
     function addCommand() {
       const cmd = document.getElementById('cmdInput').value.trim().toLowerCase();
       const msg = document.getElementById('msgInput').value.trim();
-      if (!cmd || !msg) return alert('Isi semua!');
+      if (!cmd || !msg) return alert('Isi command & pesan!');
       const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
       commands[cmd] = msg;
       localStorage.setItem('cmds', JSON.stringify(commands));
@@ -162,13 +212,18 @@
 
     function logout() {
       localStorage.clear();
+      debugEl.textContent = '';
       location.reload();
     }
 
+    // INIT
     window.onload = () => {
       const token = localStorage.getItem('accessToken');
-      if (token) showApp(token);
-      handleCallback();
+      if (token) {
+        showApp(token);
+      } else {
+        handleCallback();
+      }
     };
   </script>
 </body>
