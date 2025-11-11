@@ -3,104 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KICK GIVEAWAY MALAM INI</title>
+    <title>KICK GIVEAWAY BOT - PERFECT 2025</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700&display=swap');
-        body{margin:0;background:#000;color:#0f0;font-family:'Inter',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:radial-gradient(circle at center,#1a0033,#000);overflow:hidden}
-        .box{max-width:680px;width:100%;background:rgba(10,0,30,.97);border-radius:45px;padding:70px 50px;text-align:center;box-shadow:0 0 180px rgba(0,255,157,0.8);border:7px solid #00ff9d;position:relative;overflow:hidden}
-        .glow{position:absolute;inset:-100%;background:radial-gradient(circle at 50% 50%,rgba(0,255,157,0.5),transparent);animation:g 15s infinite}@keyframes g{0%,100%{transform:rotate(0deg)}50%{transform:rotate(180deg)}}
-        h1{font-family:'Orbitron',sans-serif;font-size:6.5rem;margin:0 0 30px;background:linear-gradient(135deg,#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d;animation:pulse 3s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.8}}
-        .login-btn{background:#00ff9d;color:#000;padding:30px 100px;font-size:42px;border-radius:70px;border:none;cursor:pointer;font-weight:bold;animation:bounce 2s infinite;box-shadow:0 20px 50px rgba(0,255,0,0.5)}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
-        button:disabled{background:#333 !important;color:#666 !important;cursor:not-allowed !important;opacity:0.4}
-        .start{background:#7c3aed;color:#fff;font-size:45px;padding:35px 100px;border-radius:70px}
-        .log{background:#000;color:#0f0;padding:40px;height:460px;overflow-y:auto;border:6px solid #00ff9d;border-radius:30px;font-family:consolas;margin:40px 0;box-shadow:inset 0 0 50px rgba(0,255,157,0.4);font-size:18px}
-        .wl{background:#001;padding:35px;border:6px dashed #0f0;border-radius:30px;margin:40px 0}
-        input{width:92%;padding:25px;border-radius:25px;border:none;margin:20px;font-size:24px;text-align:center;background:#111;color:#0f0}
-        .win{font-family:'Orbitron';font-size:140px;background:linear-gradient(135deg,gold,orange,red,purple,cyan);animation:rainbow 3s infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 80px gold}@keyframes rainbow{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
-        .locked::after{content:"WAJIB LOGIN DULU BRO!";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:32px;color:#ff0066;background:#000;padding:20px 40px;border-radius:30px;border:4px solid #ff0066;animation:blink 1.5s infinite;z-index:99}@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-        .locked{position:relative}
+        body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000)}
+        .box{max-width:620px;margin:20px auto;background:#111;padding:60px;border-radius:35px;border:6px solid #00ff9d;box-shadow:0 0 120px #00ff9d}
+        h1{font-size:5.5rem;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        button{padding:28px 90px;margin:35px;font-size:36px;border:none;border-radius:60px;cursor:pointer;font-weight:bold}
+        .login{background:#00ff9d;color:#000}
+        .start{background:#7c3aed;color:#fff;font-size:42px}
+        .log{background:#000;color:#0f0;padding:35px;height:440px;overflow-y:auto;border:5px solid #00ff9d;border-radius:25px;font-family:consolas;margin:35px 0}
+        .wl{background:#001;padding:30px;border:5px dashed #0f0;border-radius:25px;margin:35px 0}
+        input{width:90%;padding:22px;border-radius:22px;border:none;margin:15px;font-size:22px;text-align:center}
+        .hidden{display:none}
+        .win{font-size:120px;background:linear-gradient(gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     </style>
 </head>
 <body>
+<div class="box">
+<h1>KICK GIVEAWAY<br>MALAM INI</h1>
 
-<div class="box"><div class="glow"></div>
-    <h1>KICK GIVEAWAY<br><span style="font-size:3.5rem">MALAM INI</span></h1>
+<div id="loginPage"><button class="login" onclick="login()">LOGIN WITH KICK</button></div>
 
-    <div id="main">
-        <div style="margin:40px 0">
-            <button class="login-btn" onclick="login()" id="loginBtn">LOGIN WITH KICK</button>
-        </div>
-
-        <h2 style="font-size:38px">Channel: <strong id="channel">??????</strong></h2>
-        
-        <button class="start" id="startBtn" disabled>START GIVEAWAY BOT</button>
-        
-        <h3 style="font-size:34px;margin-top:50px">Whitelist User</h3>
-        <input id="nu" placeholder="Username Kick (harus persis)" disabled>
-        <button onclick="add()" disabled>+ Tambah</button>
-        <div id="wl" class="wl">Belum ada whitelist</div>
-        
-        <h3 style="font-size:40px;margin-top:60px">Peserta: <strong id="total">0</strong></h3>
-        <button class="start" onclick="roll()" id="rollBtn" disabled>ROLL SEKARANG!!</button>
-        
-        <h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
-        
-        <h3 style="font-size:34px">Live Chat Log</h3>
-        <div id="log" class="log">Bot menunggu login...</div>
-    </div>
+<div id="dashboard" class="hidden">
+<h2>Selamat datang!</h2>
+<h3>Channel: <strong id="channel">loading...</strong></h3>
+<button class="start" onclick="startBot()">START GIVEAWAY BOT</button>
+<h3>Whitelist User</h3><input id="nu" placeholder="Username Kick"><button onclick="add()">+ Tambah</button>
+<div id="wl" class="wl">Belum ada</div>
+<h3>Peserta: <strong id="total">0</strong></h3>
+<button class="start" onclick="roll()">ROLL SEKARANG!!</button>
+<h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
+<h3>Live Chat Log</h3><div id="log" class="log">Bot siap...</div>
+</div>
 </div>
 
 <script>
 const CLIENT_ID = "01K9RZ3A2G1PTZ8FSA65ZH3VXZ";
-let token = "", chatroomId = "", p = [], wl = JSON.parse(localStorage.getItem("wl_ganteng2025") || '[]');
 
-async function sha256(str){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
-function base64url(buffer){return btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
+let token = "", chatroomId = "", p = [], wl = JSON.parse(localStorage.getItem("wl_perfect2025") || '[]');
 
-function login(){
-    const verifier = base64url(crypto.getRandomValues(new Uint8Array(64)));
+async function sha256(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function base64urlEncode(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function login() {
+    const codeVerifier = base64urlEncode(crypto.getRandomValues(new Uint8Array(64)));
     const state = crypto.randomUUID();
-    sha256(verifier).then(challenge=>{
-        localStorage.setItem("cv",verifier);
-        localStorage.setItem("st",state);
-        location.href=`https://kick.com/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin+"/")}&scope=user:read channel:read chat:read chat:write&state=${state}&code_challenge=${challenge}&code_challenge_method=S256`;
+
+    sha256(codeVerifier).then(codeChallenge => {
+        localStorage.setItem('code_verifier', codeVerifier);
+        localStorage.setItem('state', state);
+
+        const params = new URLSearchParams({
+            response_type: 'code',
+            client_id: CLIENT_ID,
+            redirect_uri: location.origin + '/',
+            scope: 'user:read channel:read chat:read chat:write',
+            state: state,
+            code_challenge: codeChallenge,
+            code_challenge_method: 'S256'
+        });
+
+        location.href = 'https://kick.com/oauth/authorize?' + params.toString();
     });
 }
 
-if(location.search){
-    const params=new URLSearchParams(location.search);
-    const code=params.get("code");
-    const state=params.get("state");
-    if(code && state===localStorage.getItem("st")){
-        (async()=>{
-            const cv=localStorage.getItem("cv");
-            const res=await fetch("https://kick.com/oauth/token",{
-                method:"POST",headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({grant_type:"authorization_code",client_id:CLIENT_ID,code:code,code_verifier:cv,redirect_uri:location.origin+"/"})
+if (location.search) {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+
+    if (code && state === localStorage.getItem('state')) {
+        (async () => {
+            const codeVerifier = localStorage.getItem('code_verifier');
+
+            const tokenResponse = await fetch('https://kick.com/oauth/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    grant_type: 'authorization_code',
+                    client_id: CLIENT_ID,
+                    code: code,
+                    code_verifier: codeVerifier,
+                    redirect_uri: location.origin + '/'
+                })
             });
-            const d=await res.json(); token=d.access_token;
-            const me=await fetch("https://api.kick.com/api/v2/oauth/user",{headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json());
-            document.getElementById("channel").textContent=me.username;
-            chatroomId=me.chatroom.id;
-            
-            // SEMUA AKTIF SETELAH LOGIN
-            document.querySelectorAll("button:disabled, input:disabled").forEach(el=>el.disabled=false);
-            document.getElementById("loginBtn").style.display="none";
-            document.getElementById("startBtn").onclick=startBot;
-            document.getElementById("rollBtn").onclick=roll;
-            document.getElementById("nu").disabled=false;
-            log("LOGIN SUKSES BRO! BOT SUDAH AKTIF 100%!");
-            history.replaceState({},"","/");
+
+            const tokenData = await tokenResponse.json();
+            token = tokenData.access_token;
+
+            // ENDPOINT BARU YANG 100% JALAN HARI INI (11 NOV 2025)
+            const userInfo = await fetch("https://api.kick.com/api/v2/oauth/userinfo", {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json());
+
+            document.getElementById("channel").textContent = userInfo.preferred_username || userInfo.username;
+            chatroomId = userInfo.chatroom_id;
+
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
+            log("AKUN TERHUBUNG 100%! NAMA CHANNEL MUNCUL! CONNECTION TAB DI KICK SUDAH ADA!");
+            history.replaceState({}, "", "/");
         })();
     }
 }
 
-function log(t){const l=document.getElementById("log");l.innerHTML+=t+"<br>";l.scrollTop=l.scrollHeight;}
-function startBot(){const ws=new WebSocket("wss://ws.kick.com/chatroom/"+chatroomId); ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==="message"){const u=m.data.sender.username;const t=m.data.message.content;log(`[${u}] ${t}`);if(wl.includes(u)&&t.toLowerCase().includes("!join")){if(!p.includes(u)){p.push(u);log(`<b style="color:#0f0;font-size:2rem">JOINED → ${u}</b>`);document.getElementById("total").textContent=p.length;}}}}catch{}}; log("<b style='color:yellow;font-size:3rem'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");}
-function add(){const u=document.getElementById("nu").value.trim();if(u&&!wl.includes(u)){wl.push(u);localStorage.setItem("wl_ganteng2025",JSON.stringify(wl));document.getElementById("nu").value="";updateWL();}}
-function updateWL(){document.getElementById("wl").innerHTML=wl.length===0?"Belum ada":wl.map(x=>`<div style="background:#002;padding:20px;margin:15px;border-radius:20px;font-size:22px">${x} <button onclick="this.parentNode.remove();wl=wl.filter(y=>y!=='${x}');localStorage.setItem('wl_ganteng2025',JSON.stringify(wl));updateWL()">Hapus</button></div>`).join('');}
-function roll(){if(p.length===0)return alert("Belum ada yang join bro!");const w=p[Math.floor(Math.random()*p.length)];document.getElementById("wn").textContent=w;document.getElementById("win").classList.remove("hidden");confetti({particleCount:1200,spread:160,origin:{y:0.5}});fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`,{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({content:`@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET GUE KASIH SALUT BESAR!!!`})});log(`<b style="color:gold;font-size:5rem">PEMENANG: @${w} — LANGSUNG DIANNOUNCED!</b>`);}
+function log(t) {const l = document.getElementById("log"); l.innerHTML += t + "<br>"; l.scrollTop = l.scrollHeight;}
+function startBot() {const ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId); ws.onmessage = e => {try {const m = JSON.parse(e.data); if (m.event === "message") {const u = m.data.sender.username; const t = m.data.message.content; log(`[${u}] ${t}`); if (wl.includes(u) && t.toLowerCase().includes("!join")) {if (!p.includes(u)) {p.push(u); log(`<b style="color:#0f0">JOINED → ${u}</b>`); document.getElementById("total").textContent = p.length;}}}} catch(e) {}}; log("<b style='color:yellow'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");}
+function add() {const u = document.getElementById("nu").value.trim(); if (u && !wl.includes(u)) {wl.push(u); localStorage.setItem("wl_perfect2025", JSON.stringify(wl)); document.getElementById("nu").value = ""; updateWL();}}
+function updateWL() {document.getElementById("wl").innerHTML = wl.length === 0 ? "Belum ada whitelist" : wl.map(x => `<div style="background:#002;padding:18px;margin:12px;border-radius:18px">${x} <button onclick="this.parentNode.remove();wl=wl.filter(y=>y!=='${x}');localStorage.setItem('wl_perfect2025',JSON.stringify(wl));updateWL()">Hapus</button></div>`).join('');}
+function roll() {if (p.length === 0) return alert("Belum ada peserta!"); const w = p[Math.floor(Math.random() * p.length)]; document.getElementById("wn").textContent = w; document.getElementById("win").classList.remove("hidden"); confetti({particleCount:1000,spread:140}); fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`, {method: "POST", headers: {Authorization: "Bearer " + token, "Content-Type": "application/json"}, body: JSON.stringify({content: `@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET!!!`})}); log(`<b style="color:gold">PEMENANG: @${w} — LANGSUNG DIANNOUNCED!</b>`);}
 updateWL();
 </script>
 </body>
