@@ -3,123 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KICK RAFFLE - BOTRIX STYLE MANUAL</title>
+    <title>FEUSKASV RAFFLE - BOTRIX STYLE</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@900&display=swap');
         body{margin:0;background:#000;color:#fff;font-family:'Bebas Neue',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:radial-gradient(circle at center,#1a0033,#000);overflow:hidden}
-        .container{max-width:900px;width:100%;background:rgba(10,0,30,0.95);padding:60px 40px;border-radius:30px;border:6px solid #00ff9d;box-shadow:0 0 200px #00ff9d, inset 0 0 80px rgba(0,255,157,0.2);text-align:center;position:relative}
-        .glow{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,255,157,0.5),transparent);animation:g 20s infinite;pointer-events:none}
-        @keyframes g{0%,100%{opacity:0.4}50%{opacity:0.8}}
-        h1{font-family:'Orbitron';font-size:8rem;margin:0;background:linear-gradient(135deg,#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d}
-        .entries{font-size:6rem;color:#00ff9d;text-shadow:0 0 50px #00ff9d;margin:40px 0}
-        button{padding:25px 80px;margin:30px;font-size:40px;border:none;border-radius:60px;cursor:pointer;font-weight:bold;transition:0.3s}
-        .start{background:#7c3aed;color:#fff;box-shadow:0 0 60px #7c3aed}
-        .pick{background:#ff0066;color:#fff;animation:pulse 1.5s infinite;box-shadow:0 0 80px #ff0066}
-        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-        .status{margin:30px 0;font-size:28px;color:#0f0;text-shadow:0 0 20px #0f0}
-        input, button{padding:20px 60px;margin:15px;font-size:28px;border:none;border-radius:50px}
-        input{width:80%;background:#111;color:#0f0;text-align:center}
-        .log{background:rgba(0,0,0,0.8);padding:30px;height:300px;overflow-y:auto;border-radius:20px;margin:40px 0;border:3px solid #00ff9d;font-family:consolas;font-size:19px;color:#0f0}
-        .winner{font-size:7rem;color:gold;text-shadow:0 0 80px gold;animation:glow 2s infinite;margin:60px 0}
-        @keyframes glow{0%,100%{opacity:1}50%{opacity:0.7}}
-        .slot-machine{margin:50px 0;font-size:5rem;color:#00ff9d;text-shadow:0 0 40px #00ff9d;animation:slot 0.5s infinite linear}
-        @keyframes slot{0%{letter-spacing:0}50%{letter-spacing:2px}100%{letter-spacing:0}}
-        .whitelist{background:#001;padding:30px;border-radius:20px;border:4px dashed #0f0;margin:40px 0}
+        .box{max-width:1000px;width:100%;background:rgba(10,0,30,0.97);padding:80px 40px;border-radius:40px;border:8px solid #00ff9d;box-shadow:0 0 300px #00ff9d, inset 0 0 120px rgba(0,255,157,0.25);text-align:center;position:relative}
+        .glow{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,255,157,0.6),transparent);animation:g 18s infinite;pointer-events:none}
+        @keyframes g{0%,100%{opacity:0.5}50%{opacity:1}}
+        h1{font-family:'Orbitron';font-size:10rem;margin:0;background:linear-gradient(135deg,#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 100px #00ff9d;animation:pulse 4s infinite}
+        @keyframes pulse{0%,100%{opacity:0.85}50%{opacity:1}}
+        .entries{font-size:8rem;color:#00ff9d;text-shadow:0 0 80px #00ff9d;margin:60px 0}
+        .channel{font-size:3.5rem;color:#0f0;text-shadow:0 0 40px #0f0;margin:30px 0}
+        button{padding:30px 100px;margin:30px;font-size:50px;border:none;border-radius:80px;cursor:pointer;font-weight:bold}
+        .start{background:#7c3aed;color:#fff;box-shadow:0 0 80px #7c3aed}
+        .roll{background:#ff0066;color:#fff;animation:rollpulse 1.5s infinite;box-shadow:0 0 100px #ff0066}
+        @keyframes rollpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+        .slot{font-size:7rem;color:#00ff9d;text-shadow:0 0 60px #00ff9d;margin:80px 0;letter-spacing:10px;animation:slotspin 0.08s infinite linear}
+        @keyframes slotspin{0%{transform:translateY(0)}100%{transform:translateY(-100px)}}
+        .winner{font-size:9rem;color:gold;text-shadow:0 0 120px gold;animation:winnerglow 2s infinite;margin:100px 0}
+        @keyframes winnerglow{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+        .countdown{font-size:12rem;color:#ff0066;text-shadow:0 0 100px #ff0066;margin:80px 0}
+        .whitelist{background:#001;padding:40px;border-radius:30px;border:5px dashed #0f0;margin:60px 0}
+        input{padding:25px;font-size:35px;width:80%;border-radius:60px;border:none;background:#111;color:#0f0;text-align:center;margin:20px}
         .hidden{display:none}
-        .countdown{font-size:9rem;color:#ff0066;text-shadow:0 0 60px #ff0066;margin:50px 0}
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="box">
     <div class="glow"></div>
     <h1>RAFFLE</h1>
+    <div class="channel">@feuskasv</div>
 
-    <div class="entries" id="entriesCount">0</div>
-    <div style="font-size:3rem;margin:20px 0">ENTRIES</div>
+    <div class="entries" id="entries">0</div>
+    <div style="font-size:4rem;margin:20px 0">ENTRIES</div>
 
-    <div style="margin:50px 0">
-        <input type="text" id="chatroomId" placeholder="Masukkan ID Chatroom (contoh: 8237258)" style="margin-bottom:20px">
-        <input type="text" id="keyword" value="!join" placeholder="Keyword (contoh: !join)" style="margin-bottom:20px">
+    <input type="text" id="keyword" value="!join" placeholder="Keyword (contoh: !join)">
+
+    <div style="margin:60px 0">
         <button class="start" onclick="startRaffle()">START RAFFLE</button>
-        <button class="pick hidden" id="pickBtn" onclick="pickWinner()">PICK WINNER</button>
+        <button class="roll hidden" id="rollBtn" onclick="rollWinner()">ROLL PEMENANG</button>
     </div>
 
     <div id="countdown" class="countdown hidden">10</div>
-
-    <div id="slot" class="slot-machine hidden">PUTAR PUTAR PUTAR...</div>
+    <div id="slot" class="slot hidden">PUTAR...</div>
 
     <div id="winner" class="winner hidden">
         WINNER IS<br>
         <span id="winnerName">?????</span>
     </div>
 
-    <h2 style="margin:60px 0 20px;font-size:3.5rem">WHITELIST USER</h2>
-    <input type="text" id="wlInput" placeholder="Tambah username">
-    <button onclick="addWhitelist()" style="padding:20px 60px;font-size:30px;background:#7c3aed;color:#fff;border:none;border-radius:60px">+ ADD</button>
-    <div id="whitelist" class="whitelist">Tidak ada whitelist (semua boleh join)</div>
-
-    <div class="log" id="log">Raffle siap. Masukkan ID Chatroom & keyword dulu!</div>
+    <h2 style="margin:80px 0 30px;font-size:5rem">WHITELIST USER</h2>
+    <input type="text" id="addUser" placeholder="Tambah username (yang boleh ikut)">
+    <button onclick="addUser()" style="padding:20px 80px;font-size:40px;background:#7c3aed;color:#fff;border:none;border-radius:60px">+ ADD USER</button>
+    <div id="wlList" class="whitelist">Semua viewer boleh ikut (kosongkan = no whitelist)</div>
 </div>
 
 <script>
-let entries = [], whitelist = [], countdownTimer, slotInterval;
-const STORAGE_KEY = "raffle_botrix_manual";
+// Chatroom ID kamu: 8237258
+const CHATROOM_ID = "8237258";
+let participants = [];
+let whitelist = [];
+let rolling = false;
 
-function startRaffle() {
-    document.querySelector(".start").classList.add("hidden");
-    document.getElementById("pickBtn").classList.remove("hidden");
-    
-    let sec = 10;
-    document.getElementById("countdown").classList.remove("hidden");
-    document.getElementById("countdown").textContent = sec;
-
-    countdownTimer = setInterval(() => {
-        sec--;
-        document.getElementById("countdown").textContent = sec;
-        if (sec <= 0) {
-            clearInterval(countdownTimer);
-            document.getElementById("countdown").classList.add("hidden");
-        }
-    }, 1000);
-
-    log("<span style='color:#ff0066'>RAFFLE DIMULAI! 10 DETIK TERSISA!</span>");
-}
-
-function pickWinner() {
-    if (entries.length === 0) return alert("Belum ada yang join bro!");
-
-    document.getElementById("slot").classList.remove("hidden");
-
-    let i = 0;
-    slotInterval = setInterval(() => {
-        document.getElementById("slot").textContent = entries[Math.floor(Math.random() * entries.length)];
-        i++;
-        if (i > 20) { // Putar 20 kali biar seperti slot machine
-            clearInterval(slotInterval);
-            document.getElementById("slot").classList.add("hidden");
-            const winner = entries[Math.floor(Math.random() * entries.length)];
-            document.getElementById("winnerName").textContent = winner;
-            document.getElementById("winner").classList.remove("hidden");
-            confetti({particleCount: 1000, spread: 120, origin: { y: 0.6 }});
-            setTimeout(() => confetti({particleCount: 600, angle: 60}), 500);
-            setTimeout(() => confetti({particleCount: 600, angle: 120}), 1000);
-            log(`<span style="color:gold;font-size:3rem">PEMENANG: @${winner}</span>`);
-
-            // Send announce to chatroom if ID entered
-            const chatId = document.getElementById("chatroomId").value.trim();
-            if (chatId) {
-                // Ini contoh, ganti dengan API Kick kalau ada token
-                log(`Announce dikirim ke chatroom ${chatId}: @everyone WINNER IS @${winner} !!!`);
-            }
-        }
-    }, 100); // Kecepatan putaran slot
-}
-
-function addWhitelist() {
-    const input = document.getElementById("wlInput");
-    const user = input.value.trim();
+function addUser() {
+    const input = document.getElementById("addUser");
+    const user = input.value.trim().toLowerCase();
     if (user && !whitelist.includes(user)) {
         whitelist.push(user);
         input.value = "";
@@ -128,19 +78,89 @@ function addWhitelist() {
 }
 
 function updateWhitelist() {
-    const el = document.getElementById("whitelist");
+    const list = document.getElementById("wlList");
     if (whitelist.length === 0) {
-        el.innerHTML = "Tidak ada whitelist (semua boleh join)";
+        list.innerHTML = "Semua viewer boleh ikut (kosongkan = no whitelist)";
     } else {
-        el.innerHTML = whitelist.map(u => `${u} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(x=>x!=='${u}');updateWhitelist()" style='background:#ff0000;color:#fff;border:none;padding:5px 15px;border-radius:15px;margin-left:10px'>Hapus</button>`).join("<br>");
+        list.innerHTML = whitelist.map(u => `
+            <div style="background:#002;padding:20px;margin:15px;border-radius:20px;font-size:40px">
+                ${u} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(x=>x!=='${u}');updateWhitelist()" style="background:#ff0000;color:#fff;border:none;padding:10px 20px;border-radius:20px;margin-left:20px">HAPUS</button>
+            </div>
+        `).join("");
     }
 }
 
-function log(t) {
-    const logEl = document.getElementById("log");
-    logEl.innerHTML += t + "<br>";
-    logEl.scrollTop = logEl.scrollHeight;
+function startRaffle() {
+    document.querySelector(".start").classList.add("hidden");
+    document.getElementById("rollBtn").classList.remove("hidden");
+
+    let time = 10;
+    document.getElementById("countdown").classList.remove("hidden");
+    document.getElementById("countdown").textContent = time;
+
+    const timer = setInterval(() => {
+        time--;
+        document.getElementById("countdown").textContent = time;
+        if (time <= 0) {
+            clearInterval(timer);
+            document.getElementById("countdown").classList.add("hidden");
+        }
+    }, 1000);
 }
+
+function rollWinner() {
+    if (rolling) return;
+    if (participants.length === 0) {
+        alert("Belum ada yang join bro! Suruh ketik " + document.getElementById("keyword").value);
+        return;
+    }
+
+    rolling = true;
+    document.getElementById("slot").classList.remove("hidden");
+    document.getElementById("rollBtn").style.display = "none";
+
+    let spins = 0;
+    const spinInterval = setInterval(() => {
+        const randomUser = participants[Math.floor(Math.random() * participants.length)];
+        document.getElementById("slot").textContent = randomUser.toUpperCase();
+        spins++;
+        
+        if (spins > 35) {
+            clearInterval(spinInterval);
+            document.getElementById("slot").classList.add("hidden");
+            
+            const finalWinner = participants[Math.floor(Math.random() * participants.length)];
+            document.getElementById("winnerName").textContent = finalWinner.toUpperCase();
+            document.getElementById("winner").classList.remove("hidden");
+
+            confetti({particleCount: 1500, spread: 160, origin: { y: 0.5 }});
+            setTimeout(() => confetti({particleCount: 800, angle: 60}), 600);
+            setTimeout(() => confetti({particleCount: 800, angle: 120}), 1200);
+
+            rolling = false;
+        }
+    }, 80);
+}
+
+// Manual tambah participant (dari chat Kick)
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        const keyword = document.getElementById("keyword").value.toLowerCase();
+        const chatInput = prompt("Siapa yang ketik '" + keyword + "' ? (masukkan username)");
+        if (chatInput) {
+            const user = chatInput.trim().toLowerCase();
+            if (whitelist.length === 0 || whitelist.includes(user)) {
+                if (!participants.map(p => p.toLowerCase()).includes(user)) {
+                    participants.push(chatInput.trim());
+                    document.getElementById("entries").textContent = participants.length;
+                    alert(user + " berhasil join!");
+                }
+            } else {
+                alert(user + " tidak ada di whitelist!");
+            }
+        }
+    }
+});
 
 updateWhitelist();
 </script>
