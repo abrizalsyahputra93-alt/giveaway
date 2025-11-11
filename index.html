@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KICK GIVEAWAY BOT - PKCE 2025</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <style>
-        body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000)}
-        .box{max-width:620px;margin:20px auto;background:#111;padding:60px;border-radius:35px;border:6px solid #00ff9d;box-shadow:0 0 120px #00ff9d;position:relative;overflow:hidden}
-        h1{font-size:5.5rem;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        button{padding:28px 90px;margin:35px;font-size:36px;border:none;border-radius:60px;cursor:pointer;font-weight:bold}
-        .login{background:#00ff9d;color:#000}
-        .start{background:#7c3aed;color:#fff;font-size:42px}
-        .log{background:#000;color:#0f0;padding:35px;height:440px;overflow-y:auto;border:5px solid #00ff9d;border-radius:25px;font-family:consolas;margin:35px 0}
-        .wl{background:#001;padding:30px;border:5px dashed #0f0;border-radius:25px;margin:35px 0}
-        input{width:90%;padding:22px;border-radius:22px;border:none;margin:15px;font-size:22px;text-align:center}
-        .hidden{display:none}
-        .win{font-size:120px;background:linear-gradient(gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    </style>
-</head>
-<body>
+<html><head><meta charset="utf-8"><title>KICK GIVEAWAY FINAL</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000)}
+.box{max-width:620px;margin:20px auto;background:#111;padding:60px;border-radius:35px;border:6px solid #00ff9d;box-shadow:0 0 120px #00ff9d}
+h1{font-size:5.5rem;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+button{padding:28px 90px;margin:35px;font-size:36px;border:none;border-radius:60px;cursor:pointer;font-weight:bold}
+.login{background:#00ff9d;color:#000}
+.start{background:#7c3aed;color:#fff;font-size:42px}
+.log{background:#000;color:#0f0;padding:35px;height:440px;overflow-y:auto;border:5px solid #00ff9d;border-radius:25px;font-family:consolas;margin:35px 0}
+.wl{background:#001;padding:30px;border:5px dashed #0f0;border-radius:25px;margin:35px 0}
+input{width:90%;padding:22px;border-radius:22px;border:none;margin:15px;font-size:22px;text-align:center}
+.hidden{display:none}
+.win{font-size:120px;background:linear-gradient(gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+</style></head><body>
 <div class="box">
 <h1>KICK GIVEAWAY<br>MALAM INI</h1>
 
@@ -39,10 +33,9 @@
 </div>
 
 <script>
-// HANYA CLIENT ID (TIDAK PERLU CLIENT SECRET LAGI — PKCE MURNI)
 const CLIENT_ID = "01K9RZ3A2G1PTZ8FSA65ZH3VXZ";
 
-let token = "", chatroomId = "", p = [], wl = JSON.parse(localStorage.getItem("wl_pkce2025") || '[]');
+let token = "", chatroomId = "", p = [], wl = JSON.parse(localStorage.getItem("wl_final2025") || '[]');
 
 async function sha256(string) {
     const encoder = new TextEncoder();
@@ -101,16 +94,17 @@ if (location.search) {
             const tokenData = await tokenResponse.json();
             token = tokenData.access_token;
 
-            const me = await fetch("https://api.kick.com/api/v2/channels/current", {
+            // ENDPOINT BARU YANG PALING STABIL HARI INI
+            const userInfo = await fetch("https://api.kick.com/api/v2/oauth/user", {
                 headers: { Authorization: `Bearer ${token}` }
             }).then(r => r.json());
 
-            document.getElementById("channel").textContent = me.slug;
-            chatroomId = me.chatroom.id;
+            document.getElementById("channel").textContent = userInfo.username;
+            chatroomId = userInfo.chatroom.id;
 
             document.getElementById("loginPage").classList.add("hidden");
             document.getElementById("dashboard").classList.remove("hidden");
-            log("KONEKSI SUKSES 100%! GIVEAWAY MALAM INI SIAP PECAH!");
+            log("KONEKSI SUKSES TOTAL! DASHBOARD MUNcul BRO!");
             history.replaceState({}, "", "/");
         })();
     }
@@ -118,8 +112,8 @@ if (location.search) {
 
 function log(t) {const l = document.getElementById("log"); l.innerHTML += t + "<br>"; l.scrollTop = l.scrollHeight;}
 function startBot() {const ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId); ws.onmessage = e => {try {const m = JSON.parse(e.data); if (m.event === "message") {const u = m.data.sender.username; const t = m.data.message.content; log(`[${u}] ${t}`); if (wl.includes(u) && t.toLowerCase().includes("!join")) {if (!p.includes(u)) {p.push(u); log(`<b style="color:#0f0">JOINED → ${u}</b>`); document.getElementById("total").textContent = p.length;}}}} catch(e) {}}; log("<b style='color:yellow'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");}
-function add() {const u = document.getElementById("nu").value.trim(); if (u && !wl.includes(u)) {wl.push(u); localStorage.setItem("wl_pkce2025", JSON.stringify(wl)); document.getElementById("nu").value = ""; updateWL();}}
-function updateWL() {document.getElementById("wl").innerHTML = wl.length === 0 ? "Belum ada whitelist" : wl.map(x => `<div style="background:#002;padding:18px;margin:12px;border-radius:18px">${x} <button onclick="this.parentNode.remove();wl=wl.filter(y=>y!=='${x}');localStorage.setItem('wl_pkce2025',JSON.stringify(wl));updateWL()">Hapus</button></div>`).join('');}
+function add() {const u = document.getElementById("nu").value.trim(); if (u && !wl.includes(u)) {wl.push(u); localStorage.setItem("wl_final2025", JSON.stringify(wl)); document.getElementById("nu").value = ""; updateWL();}}
+function updateWL() {document.getElementById("wl").innerHTML = wl.length === 0 ? "Belum ada whitelist" : wl.map(x => `<div style="background:#002;padding:18px;margin:12px;border-radius:18px">${x} <button onclick="this.parentNode.remove();wl=wl.filter(y=>y!=='${x}');localStorage.setItem('wl_final2025',JSON.stringify(wl));updateWL()">Hapus</button></div>`).join('');}
 function roll() {if (p.length === 0) return alert("Belum ada peserta!"); const w = p[Math.floor(Math.random() * p.length)]; document.getElementById("wn").textContent = w; document.getElementById("win").classList.remove("hidden"); confetti({particleCount: 1000, spread: 140}); fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`, {method: "POST", headers: {Authorization: "Bearer " + token, "Content-Type": "application/json"}, body: JSON.stringify({content: `@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET!!!`})}); log(`<b style="color:gold">PEMENANG: @${w} — LANGSUNG DIANNOUNCED!</b>`);}
 updateWL();
 </script>
