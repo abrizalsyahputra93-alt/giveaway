@@ -3,152 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KICK GIVEAWAY - JALAN 100%</title>
+    <title>KICK RAFFLE - BOTRIX STYLE</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000);min-height:100vh;display:flex;justify-content:center;align-items:center}
-        .box{max-width:700px;width:100%;background:#111;padding:80px;border-radius:50px;border:8px solid #00ff9d;box-shadow:0 0 200px #00ff9d;position:relative;overflow:hidden}
-        h1{font-size:7rem;margin:0;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d}
-        button{padding:35px 120px;margin:40px;font-size:48px;border:none;border-radius:80px;cursor:pointer;font-weight:bold}
-        .login{background:#00ff9d;color:#000;animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-        .start{background:#7c3aed;color:#fff}
-        .log{background:#000;color:#0f0;padding:40px;height:500px;overflow-y:auto;border:8px solid #00ff9d;border-radius:30px;font-family:consolas;margin:40px 0;font-size:20px}
-        .wl{background:#001;padding:35px;border:8px dashed #0f0;border-radius:30px;margin:40px 0}
-        input{width:90%;padding:30px;border-radius:30px;border:none;margin:20px;font-size:28px;text-align:center;background:#111;color:#0f0}
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@900&display=swap');
+        body{margin:0;background:#000;color:#fff;font-family:'Bebas Neue',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:radial-gradient(circle at center,#1a0033,#000);overflow:hidden}
+        .container{max-width:900px;width:100%;background:rgba(10,0,30,0.95);padding:60px 40px;border-radius:30px;border:6px solid #00ff9d;box-shadow:0 0 200px #00ff9d, inset 0 0 80px rgba(0,255,157,0.3);text-align:center;position:relative}
+        .glow{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,255,157,0.4),transparent);animation:glow 15s infinite;pointer-events:none}
+        @keyframes glow{0%,100%{opacity:0.6}50%{opacity:1}}
+        h1{font-family:'Orbitron',sans-serif;font-size:8rem;margin:0;background:linear-gradient(135deg,#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d;animation:pulse 3s infinite}
+        @keyframes pulse{0%,100%{opacity:0.9}50%{opacity:1}}
+        .entries{font-size:6rem;color:#00ff9d;text-shadow:0 0 50px #00ff9d;margin:40px 0}
+        .status{font-size:2rem;margin:30px 0;color:#0f0;text-shadow:0 0 20px #0f0}
+        input, button{padding:20px 40px;margin:15px;font-size:28px;border:none;border-radius:50px}
+        input{width:80%;background:#111;color:#0f0;text-align:center}
+        button{cursor:pointer;font-weight:bold}
+        .login-btn{background:#00ff9d;color:#000;animation:bounce 2s infinite}
+        .start-btn{background:#7c3aed;color:#fff}
+        .pick-btn{background:#ff0066;color:#fff;animation:pulse 1.5s infinite}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+        .log{background:rgba(0,0,0,0.9);padding:30px;height:380px;overflow-y:auto;border-radius:20px;margin:40px 0;border:3px solid #00ff9d;font-family:consolas;font-size:19px;color:#0f0}
+        .winner{font-size:7rem;color:gold;text-shadow:0 0 80px gold;animation:winner 2s infinite;margin:60px 0}
+        @keyframes winner{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
         .hidden{display:none}
-        .win{font-size:160px;background:linear-gradient(gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:w 1.5s infinite}@keyframes w{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+        .countdown{font-size:9rem;color:#ff0066;text-shadow:0 0 60px #ff0066;margin:50px 0}
     </style>
 </head>
 <body>
-<div class="box">
-    <h1>KICK GIVEAWAY<br>MALAM INI</h1>
 
-    <div id="login"><button class="login" onclick="login()">LOGIN WITH KICK</button></div>
+<div class="container">
+    <div class="glow"></div>
+    <h1>RAFFLE</h1>
 
-    <div id="dash" class="hidden">
-        <h2>Selamat datang!</h2>
-        <h3>Channel: <strong id="ch">loading...</strong></h3>
-        <button class="start" onclick="start()">START GIVEAWAY BOT</button>
+    <!-- HALAMAN SETUP MANUAL -->
+    <div id="setup">
+        <div style="margin:40px 0">
+            <input type="text" id="clientId" placeholder="Masukkan Client ID kamu" style="margin-bottom:20px">
+            <input type="text" id="clientSecret" placeholder="Masukkan Client Secret kamu">
+            <br><br>
+            <button class="login-btn" onclick="saveCredentials()">SIMPAN & CONNECT KE KICK</button>
+        </div>
+        <p style="font-size:20px;color:#aaa">Setelah klik tombol di atas → akan muncul halaman authorize Kick → klik "Authorize" → langsung masuk raffle!</p>
+    </div>
+
+    <!-- DASHBOARD RAFFLE (BOTRIX STYLE) -->
+    <div id="raffle" class="hidden">
+        <div class="status">Connected as <strong id="username">loading...</strong></div>
         
-        <h3>Whitelist User</h3>
-        <input id="u" placeholder="Username Kick"><button onclick="add()">+ Tambah</button>
-        <div id="wl" class="wl">Belum ada whitelist</div>
-        
-        <h3>Peserta: <strong id="tot">0</strong></h3>
-        <button class="start" onclick="roll()">ROLL SEKARANG!!</button>
-        
-        <h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
-        
-        <h3>Live Chat Log</h3>
-        <div id="log" class="log">Bot siap...</div>
+        <div class="entries" id="entriesCount">0</div>
+        <div style="font-size:2.5rem;margin:20px 0">ENTRIES</div>
+
+        <input type="text" id="keyword" value="!join" placeholder="Keyword (misal: !join)" style="width:70%">
+
+        <div style="margin:50px 0">
+            <button class="start-btn" onclick="startRaffle()" id="startBtn">START RAFFLE</button>
+            <button class="pick-btn hidden" onclick="pickWinner()" id="pickBtn">PICK WINNER</button>
+        </div>
+
+        <div id="countdown" class="countdown hidden">10</div>
+
+        <div id="winner" class="winner hidden">
+            WINNER IS<br>
+            <span id="winnerName">?????</span>
+        </div>
+
+        <div class="log" id="log">Raffle siap. Masukkan Client ID & Secret dulu!</div>
     </div>
 </div>
 
 <script>
-const CLIENT_ID = "01K9RZ3A2G1PTZ8FSA65ZH3VXZ";
-const CLIENT_SECRET = "4f1c2575f4d923121cfc0a713d45ee4150b086690f8da472b7f025a47c9cd8f5";
-let token = "", chatroomId = "", participants = [], whitelist = JSON.parse(localStorage.getItem("wl_idkick") || "[]");
+// Variabel global
+let token = "", chatroomId = "", entries = [], ws, countdownTimer;
+const STORAGE_KEY = "kick_raffle_botrix_2025";
 
-function login() {
-    const state = crypto.randomUUID();
-    localStorage.setItem("state", state);
-    location.href = `https://id.kick.com/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin + "/")}&scope=user:read channel:read chat:read chat:write&state=${state}`;
+function saveCredentials() {
+    const clientId = document.getElementById("clientId").value.trim();
+    const clientSecret = document.getElementById("clientSecret").value.trim();
+    
+    if (!clientId || !clientSecret) {
+        alert("Client ID dan Client Secret harus diisi bro!");
+        return;
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({clientId, clientSecret}));
+    alert("Credentials disimpan! Sekarang akan redirect ke Kick untuk authorize...");
+    loginWithKick(clientId, clientSecret);
 }
 
-if (location.search) {
-    const params = new URLSearchParams(location.search);
-    const code = params.get("code");
-    const state = params.get("state");
+function loginWithKick(clientId, clientSecret) {
+    const state = Date.now().toString(36) + Math.random().toString(36);
+    localStorage.setItem("oauth_state", state);
+    
+    const redirectUri = location.origin + location.pathname;
+    const authUrl = `https://id.kick.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:read channel:read chat:read chat:write&state=${state}`;
+    
+    location.href = authUrl;
+}
 
-    if (code && state === localStorage.getItem("state")) {
-        (async () => {
-            const res = await fetch("https://id.kick.com/oauth/token", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    grant_type: "authorization_code",
-                    client_id: CLIENT_ID,
-                    client_secret: CLIENT_SECRET,
-                    code: code,
-                    redirect_uri: location.origin + "/"
-                })
-            });
-            const data = await res.json();
+// Cek kalau kembali dari Kick OAuth
+if (location.search.includes("code=")) {
+    const urlParams = new URLSearchParams(location.search);
+    const code = urlParams.get("code");
+    const state = urlParams.get("state");
+    const savedState = localStorage.getItem("oauth_state");
+
+    if (code && state === savedState) {
+        const {clientId, clientSecret} = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const redirectUri = location.origin + location.pathname;
+
+        fetch("https://id.kick.com/oauth/token", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                grant_type: "authorization_code",
+                client_id: clientId,
+                client_secret: clientSecret,
+                code: code,
+                redirect_uri: redirectUri
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
             token = data.access_token;
 
-            const me = await fetch("https://api.kick.com/api/v2/oauth/userinfo", {
-                headers: { Authorization: `Bearer ${token}` }
-            }).then(r => r.json());
+            return fetch("https://api.kick.com/api/v2/oauth/userinfo", {
+                headers: { Authorization: "Bearer " + token }
+            });
+        })
+        .then(r => r.json())
+        .then(user => {
+            document.getElementById("username").textContent = "@" + user.preferred_username;
+            chatroomId = user.chatroom_id;
 
-            document.getElementById("ch").textContent = me.preferred_username;
-            chatroomId = me.chatroom_id;
-
-            document.getElementById("login").classList.add("hidden");
-            document.getElementById("dash").classList.remove("hidden");
-            log(`<b style="color:#00ff9d;font-size:3rem">TERHUBUNG SUKSES @${me.preferred_username}!</b>`);
-            log("<b style='color:gold'>Connection tab di Kick sudah muncul bro!</b>");
-            history.replaceState({}, "", "/");
-        })();
+            document.getElementById("setup").classList.add("hidden");
+            document.getElementById("raffle").classList.remove("hidden");
+            
+            log(`Connected @${user.preferred_username} - Raffle aktif!`);
+            startListening();
+            history.replaceState({}, "", location.pathname);
+        })
+        .catch(err => {
+            log("Gagal connect: " + err.message);
+        });
     }
 }
 
-function log(t) {
-    const l = document.getElementById("log");
-    l.innerHTML += t + "<br>";
-    l.scrollTop = l.scrollHeight;
+function log(text) {
+    const logEl = document.getElementById("log");
+    logEl.innerHTML += text + "<br>";
+    logEl.scrollTop = logEl.scrollHeight;
 }
 
-function start() {
-    const ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId);
+function startListening() {
+    if (!chatroomId) return;
+    ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId);
     ws.onmessage = e => {
         try {
-            const m = JSON.parse(e.data);
-            if (m.event === "message") {
-                const u = m.data.sender.username;
-                const t = m.data.message.content;
-                log(`[${u}] ${t}`);
-                if (whitelist.includes(u) && t.toLowerCase().includes("!join")) {
-                    if (!participants.includes(u)) {
-                        participants.push(u);
-                        log(`<b style="color:#0f0;font-size:3rem">JOINED → ${u}</b>`);
-                        document.getElementById("tot").textContent = participants.length;
-                    }
+            const msg = JSON.parse(e.data);
+            if (msg.event === "message") {
+                const username = msg.data.sender.username;
+                const content = msg.data.message.content.toLowerCase();
+                const keyword = document.getElementById("keyword").value.toLowerCase().trim();
+
+                if (content.includes(keyword) && !entries.includes(username)) {
+                    entries.push(username);
+                    document.getElementById("entriesCount").textContent = entries.length;
+                    log(`+ ${username} joined`);
                 }
             }
         } catch (e) {}
     };
-    log("<b style='color:yellow;font-size:4rem'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");
 }
 
-function add() {
-    const u = document.getElementById("u").value.trim();
-    if (u && !whitelist.includes(u)) {
-        whitelist.push(u);
-        localStorage.setItem("wl_idkick", JSON.stringify(whitelist));
-        document.getElementById("u").value = "";
-        updateWL();
-    }
+function startRaffle() {
+    document.getElementById("startBtn").classList.add("hidden");
+    document.getElementById("pickBtn").classList.remove("hidden");
+    
+    let seconds = 10;
+    document.getElementById("countdown").classList.remove("hidden");
+    document.getElementById("countdown").textContent = seconds;
+
+    countdownTimer = setInterval(() => {
+        seconds--;
+        document.getElementById("countdown").textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(countdownTimer);
+            document.getElementById("countdown").classList.add("hidden");
+        }
+    }, 1000);
+
+    log("<span style='color:#ff0066;font-size:1.8rem'>RAFFLE DIMULAI! 10 DETIK TERSISA!</span>");
 }
 
-function updateWL() {
-    document.getElementById("wl").innerHTML = whitelist.length === 0 ? "Belum ada whitelist" : whitelist.map(x => `<div style="background:#002;padding:25px;margin:15px;border-radius:25px">${x} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(y=>y!=='${x}');localStorage.setItem('wl_idkick',JSON.stringify(whitelist));updateWL()">Hapus</button></div>`).join('');
-}
+function pickWinner() {
+    if (entries.length === 0) return alert("Belum ada yang join bro!");
 
-function roll() {
-    if (participants.length === 0) return alert("Belum ada peserta!");
-    const w = participants[Math.floor(Math.random() * participants.length)];
-    document.getElementById("wn").textContent = w;
-    document.getElementById("win").classList.remove("hidden");
-    confetti({particleCount: 1500, spread: 180});
+    const winner = entries[Math.floor(Math.random() * entries.length)];
+    document.getElementById("winnerName").textContent = winner;
+    document.getElementById("winner").classList.remove("hidden");
+
+    confetti({particleCount: 800, spread: 100, origin: { y: 0.6 }});
+    setTimeout(() => confetti({particleCount: 500, angle: 60}), 300);
+    setTimeout(() => confetti({particleCount: 500, angle: 120}), 600);
+
     fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`, {
         method: "POST",
-        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-        body: JSON.stringify({ content: `@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET!!!` })
+        headers: {
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            content: `@everyone WINNER RAFFLE MALAM INI ADALAH @${winner} !!! GILA NIH BRO MENANG BANGET CONGRATS!!!`
+        })
     });
-    log(`<b style="color:gold;font-size:6rem">PEMENANG: @${w}</b>`);
+
+    log(`<span style='color:gold;font-size:3rem'>PEMENANG: @${winner}</span>`);
 }
 
-updateWL();
+// Auto load credentials kalau sudah pernah disimpan
+window.onload = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        const {clientId} = JSON.parse(saved);
+        document.getElementById("clientId").value = clientId;
+        document.getElementById("clientSecret").value = ""; // secret ga ditampilkan
+    }
+};
 </script>
 </body>
 </html>
