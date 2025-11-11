@@ -1,179 +1,98 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kick Command Manager</title>
-  <style>
-    body {font-family: 'Segoe UI', sans-serif;background: #1a1a1a;color: #fff;margin: 0;padding: 20px;}
-    .container {max-width: 600px;margin: auto;background: #252525;padding: 20px;border-radius: 12px;box-shadow: 0 4px 12px rgba(0,0,0,0.3);}
-    h1 {text-align: center;color: #00ff88;}
-    input, button {padding: 10px;margin: 8px 0;border-radius: 6px;border: none;}
-    input {width: 100%;background: #333;color: #fff;}
-    button {background: #00ff88;color: #000;font-weight: bold;cursor: pointer;transition: 0.2s;}
-    button:hover {background: #00cc70;}
-    .commands {margin-top: 20px;}
-    .cmd-item {background: #333;padding: 10px;margin: 8px 0;border-radius: 6px;display: flex;justify-content: space-between;align-items: center;}
-    .logout {background: #ff4444;margin-top: 20px;}
-    .logout:hover {background: #cc0000;}
-    .debug {background:#333;padding:10px;margin:10px 0;border-radius:6px;font-family:monospace;font-size:12px;max-height:200px;overflow:auto;white-space: pre-wrap;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kick Bot Padang</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+  body{background:linear-gradient(135deg,#1e3c72,#2a5298);color:white;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .card{background:rgba(255,255,255,0.05);backdrop-filter:blur(15px);border-radius:25px;padding:40px 30px;max-width:450px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.4);text-align:center;}
+  h1{font-size:32px;margin-bottom:10px;letter-spacing:1px;}
+  p{margin-bottom:25px;opacity:0.8;font-size:15px;}
+  input,button{width:100%;padding:14px;margin:12px 0;border-radius:12px;border:none;font-size:16px;transition:0.3s;}
+  input{background:rgba(255,255,255,0.15);color:white;}
+  input::placeholder{color:rgba(255,255,255,0.7);}
+  button{background:linear-gradient(90deg,#00d26a,#00b359);color:white;font-weight:bold;cursor:pointer;box-shadow:0 6px 15px rgba(0,0,0,0.3);}
+  button:hover{background:linear-gradient(90deg,#00b359,#00d26a);transform:translateY(-2px);}
+  .status{margin-top:15px;font-size:14px;opacity:0.9;min-height:18px;transition:0.3s;}
+  .error{color:#ff6b6b;background:rgba(255,107,107,0.15);padding:10px;border-radius:8px;margin:12px 0;display:none;font-size:14px;text-align:center;}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Kick Command Manager</h1>
+<div class="card">
+  <h1>Kick Bot Padang</h1>
+  <p>Bot chat interaktif dari Sumatera Barat</p>
 
-    <div id="loginSection">
-      <p>Login ke Kick untuk mulai mengatur command custom.</p>
-      <button onclick="startLogin()">Login with Kick</button>
-      <div class="debug" id="debug"></div>
-    </div>
-
-    <div id="appSection" style="display:none;">
-      <p>Selamat datang! Access Token: <span id="tokenPreview"></span></p>
-      <button class="logout" onclick="logout()">Logout</button>
-
-      <h3>Tambah Command Custom</h3>
-      <input id="cmdInput" placeholder="!hello" required />
-      <input id="msgInput" placeholder="Halo dunia!" required />
-      <button onclick="addCommand()">Tambah</button>
-
-      <div class="commands">
-        <h3>Custom Commands</h3>
-        <div id="commandList"></div>
-      </div>
-    </div>
+  <div id="login">
+    <button onclick="login()">Login dengan Kick</button>
   </div>
 
-  <script>
-    // CONFIG: Pakai Client Secret (aman untuk demo)
-    const CLIENT_ID = '01K9SEDGKEAB4KH7WAJ8Q2XGVD';
-    const CLIENT_SECRET = '4f1c2575f4d923121cfc0a713d45ee4150b086690f8da472b7f025a47c9cd8f5';
-    const REDIRECT_URI = 'https://giveaway-xi-five.vercel.app/'; // Coba ganti tanpa '/' kalau error
-    const AUTH_URL = 'https://id.kick.com/oauth/authorize';
-    const TOKEN_URL = 'https://id.kick.com/oauth/token';
+  <div id="bot" style="display:none;">
+    <input type="text" id="channel" placeholder="Masukkan channel kamu" />
+    <button onclick="startBot()">Start Bot</button>
+    <div class="status" id="status">Siap...</div>
+  </div>
 
-    const debug = document.getElementById('debug');
+  <div id="error" class="error"></div>
+</div>
 
-    function log(msg) {
-      debug.textContent += msg + '\n';
-      console.log(msg);
-    }
+<script>
+const CLIENT_ID = "01K9SEDGKEAB4KH7WAJ8Q2XGVD";
+const REDIRECT_URI = window.location.origin + window.location.pathname;
 
-    // Login (Authorization Code Flow dengan Secret)
-    function startLogin() {
-      debug.textContent = '';
-      const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI,
-        scope: 'chat:write user:read', // Scope dari docs
-        state: 'kickcmd_' + Date.now()
-      });
+function login(){
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    response_type: 'code',
+    scope: 'chat:read chat:write',
+    state: 'kick-bot-padang'
+  });
+  window.location.href = `https://kick.com/oauth/authorize?${params.toString()}`;
+}
 
-      const url = `${AUTH_URL}?${params.toString()}`;
-      log('Login URL: ' + url);
-      location.href = url;
-    }
+async function exchangeToken(code){
+  try{
+    const res = await fetch(`/api/token?code=${code}`);
+    const data = await res.json();
+    if(data.access_token){
+      sessionStorage.setItem('kick_token', data.access_token);
+      document.getElementById('login').style.display='none';
+      document.getElementById('bot').style.display='block';
+      document.getElementById('status').textContent='Login sukses!';
+      history.replaceState({}, '', REDIRECT_URI);
+    } else showError(data.error||'Gagal tukar token');
+  } catch(e){ showError(e.message); }
+}
 
-    // Handle Callback
-    async function handleCallback() {
-      const params = new URLSearchParams(location.search);
-      const code = params.get('code');
-      const error = params.get('error');
+async function startBot(){
+  const channel = document.getElementById('channel').value.trim();
+  const token = sessionStorage.getItem('kick_token');
+  if(!channel||!token) return showError('Login dulu!');
+  document.getElementById('status').textContent='Mengirim pesan...';
+  try{
+    const res = await fetch('/api/bot',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ channel, token })
+    });
+    const data = await res.json();
+    document.getElementById('status').textContent=data.message||'Bot aktif!';
+  } catch(e){ showError(e.message); }
+}
 
-      if (error) {
-        log('Kick Error: ' + error);
-        log('Desc: ' + (params.get('error_description') || ''));
-        alert('Error: ' + error);
-        return;
-      }
-      if (!code) return;
+function showError(msg){
+  const e = document.getElementById('error');
+  e.textContent=msg;
+  e.style.display='block';
+  setTimeout(()=>e.style.display='none',5000);
+}
 
-      const body = new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        code: code,
-        redirect_uri: REDIRECT_URI
-      });
-
-      log('POST to: ' + TOKEN_URL);
-      log('Body: ' + body.toString());
-
-      try {
-        const response = await fetch(TOKEN_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: body
-        });
-
-        const text = await response.text();
-        log('Status: ' + response.status);
-        log('Response: ' + text);
-
-        if (response.ok) {
-          const data = JSON.parse(text);
-          localStorage.setItem('accessToken', data.access_token);
-          history.replaceState(null, null, '/');
-          showApp(data.access_token);
-        } else {
-          alert('Error ' + response.status + ': ' + text);
-        }
-      } catch (err) {
-        log('Fetch error: ' + err.message);
-        alert('Error: ' + err.message);
-      }
-    }
-
-    function showApp(token) {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('appSection').style.display = 'block';
-      document.getElementById('tokenPreview').textContent = token.substring(0, 15) + '...';
-      loadCommands();
-    }
-
-    function loadCommands() {
-      const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
-      const list = document.getElementById('commandList');
-      list.innerHTML = '';
-      Object.entries(commands).forEach(([cmd, msg]) => {
-        const div = document.createElement('div');
-        div.className = 'cmd-item';
-        div.innerHTML = `<strong>${cmd}</strong>: ${msg} <button onclick="deleteCmd('${cmd}')" style="background:#ff4444;font-size:12px;padding:4px 8px;">Hapus</button>`;
-        list.appendChild(div);
-      });
-    }
-
-    function addCommand() {
-      const cmd = document.getElementById('cmdInput').value.trim();
-      const msg = document.getElementById('msgInput').value.trim();
-      if (!cmd || !msg) return alert('Isi command dan pesan!');
-      const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
-      commands[cmd.toLowerCase()] = msg;
-      localStorage.setItem('cmds', JSON.stringify(commands));
-      document.getElementById('cmdInput').value = '';
-      document.getElementById('msgInput').value = '';
-      loadCommands();
-    }
-
-    function deleteCmd(cmd) {
-      const commands = JSON.parse(localStorage.getItem('cmds') || '{}');
-      delete commands[cmd];
-      localStorage.setItem('cmds', JSON.stringify(commands));
-      loadCommands();
-    }
-
-    function logout() {
-      localStorage.clear();
-      location.reload();
-    }
-
-    window.onload = () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) showApp(token);
-      handleCallback();
-    };
-  </script>
+// Cek redirect balik
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+if(code) exchangeToken(code);
+</script>
 </body>
 </html>
