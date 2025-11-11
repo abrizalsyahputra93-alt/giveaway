@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kick Giveaway Bot - Vercel Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Inter:wght@400;700&display=swap');
+        body{margin:0;background:#000;color:#0f0;font-family:'Inter',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:radial-gradient(circle at center,#1a0033,#000)}
+        .box{max-width:600px;width:100%;background:rgba(15,0,35,.98);border-radius:40px;padding:70px 50px;text-align:center;box-shadow:0 0 150px rgba(0,255,157,0.9);border:6px solid #00ff9d;position:relative;overflow:hidden}
+        .glow{position:absolute;inset:-100%;background:radial-gradient(circle at 50% 50%,rgba(0,255,157,0.5),transparent);animation:g 15s infinite}@keyframes g{0%,100%{transform:rotate(0deg)}50%{transform:rotate(180deg)}}
+        h1{font-family:'Orbitron',sans-serif;font-size:6rem;margin:0 0 30px;background:linear-gradient(135deg,#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 50px #00ff9d}
+        button{padding:30px 100px;margin:40px auto;font-size:40px;font-weight:bold;border:none;border-radius:70px;cursor:pointer;display:block;width:95%;box-shadow:0 25px 60px rgba(0,0,0,0.8)}
+        .login{background:#00ff9d;color:#000;animation:p 2s infinite}@keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+        .start{background:#7c3aed;color:#fff;font-size:45px}
+        .log{background:#000;color:#0f0;padding:40px;height:460px;overflow-y:auto;border:6px solid #00ff9d;border-radius:30px;font-family:consolas;margin:40px 0;box-shadow:inset 0 0 40px rgba(0,255,157,0.4)}
+        .wl{background:#001;padding:35px;border:6px dashed #0f0;border-radius:30px;margin:40px 0}
+        input{width:92%;padding:25px;border-radius:25px;border:none;margin:20px;font-size:24px;text-align:center}
+        .hidden{display:none}
+        .win{font-family:'Orbitron';font-size:130px;background:linear-gradient(135deg,gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px gold;animation:w 1.5s infinite}@keyframes w{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+    </style>
+</head>
+<body>
+<div class="box"><div class="glow"></div>
+<h1>KICK GIVEAWAY<br><span style="font-size:3rem">MALAM INI</span></h1>
+
+<div id="loginPage">
+    <button class="login" onclick="login()">LOGIN WITH KICK</button>
+</div>
+
+<div id="dashboard" class="hidden">
+    <h2>Selamat datang!</h2>
+    <h3>Channel: <strong id="channel">loading...</strong></h3>
+    <button class="start" onclick="startBot()">START GIVEAWAY BOT</button>
+    
+    <h3 style="font-size:32px;margin-top:50px">Whitelist User</h3>
+    <input id="nu" placeholder="Username Kick persis">
+    <button onclick="add()">+ Tambah</button>
+    <div id="wl" class="wl">Belum ada whitelist</div>
+    
+    <h3 style="font-size:32px">Keyword Join</h3>
+    <input id="kw" value="!join" style="width:400px">
+    
+    <h3 style="font-size:38px;margin-top:60px">Peserta: <strong id="total">0</strong></h3>
+    <button class="start" onclick="roll()">ROLL SEKARANG!!</button>
+    
+    <h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
+    
+    <h3 style="font-size:32px">Live Chat Log</h3>
+    <div id="log" class="log">Bot siap...</div>
+</div>
+</div>
+
+<script>
+// CLIENT ID & SECRET KAMU (SUDAH 100% BENAR)
+const CLIENT_ID = "01K9RZ3A2G1PTZ8FSA65ZH3VXZ";
+const CLIENT_SECRET = "4f1c2575f4d923121cfc0a713d45ee4150b086690f8da472b7f025a47c9cd8f5";
+
+let token = "", chatroomId = "", participants = [], whitelist = JSON.parse(localStorage.getItem('vercel_giveaway') || '[]');
+
+function login() {
+    const state = crypto.randomUUID();
+    const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(64))));
+    const challenge = btoa(String.fromCharCode(...new Uint8Array(crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    localStorage.setItem('vercel_verifier', verifier);
+    localStorage.setItem('vercel_state', state);
+    location.href = `https://kick.com/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin + '/')} &scope=user:read channel:read chat:read chat:write&state=${state}&code_challenge=${challenge}&code_challenge_method=S256`;
+}
+
+if (location.search) {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    if (code && state === localStorage.getItem('vercel_state')) {
+        (async () => {
+            const res = await fetch("https://kick.com/oauth/token", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    grant_type: "authorization_code",
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    code: code,
+                    code_verifier: localStorage.getItem('vercel_verifier'),
+                    redirect_uri: location.origin + '/'
+                })
+            });
+            const data = await res.json();
+            token = data.access_token;
+            const me = await fetch("https://api.kick.com/api/v2/channels/current", {headers: {Authorization: `Bearer ${token}`}}).then(r => r.json());
+            document.getElementById("channel").textContent = me.slug;
+            chatroomId = me.chatroom.id;
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
+            log("BOT KAMU SUDAH NYALA 100% BRO! GASSKEUN MALAM INI!");
+            history.replaceState({}, "", "/");
+        })();
+    }
+}
+
+function log(t) {
+    const l = document.getElementById("log");
+    l.innerHTML += t + "<br>";
+    l.scrollTop = l.scrollHeight;
+}
+
+function startBot() {
+    const ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId);
+    ws.onmessage = e => {
+        try {
+            const m = JSON.parse(e.data);
+            if (m.event === "message") {
+                const u = m.data.sender.username;
+                const t = m.data.message.content;
+                log(`[${u}] ${t}`);
+                if (whitelist.includes(u) && t.toLowerCase().includes(document.getElementById("kw").value.toLowerCase())) {
+                    if (!participants.includes(u)) {
+                        participants.push(u);
+                        log(`<b style="color:#0f0;font-size:2rem">JOINED → ${u}</b>`);
+                        document.getElementById("total").textContent = participants.length;
+                    }
+                }
+            }
+        } catch (e) {}
+    };
+    log("<b style='color:yellow;font-size:3rem'>GIVEAWAY DIMULAI! KETIK " + document.getElementById("kw").value + " SEKARANG BROOO!</b>");
+}
+
+function add() {
+    const u = document.getElementById("nu").value.trim();
+    if (u && !whitelist.includes(u)) {
+        whitelist.push(u);
+        localStorage.setItem('vercel_giveaway', JSON.stringify(whitelist));
+        document.getElementById("nu").value = '';
+        updateWL();
+    }
+}
+
+function updateWL() {
+    document.getElementById("wl").innerHTML = whitelist.length === 0 ? "Belum ada whitelist" : whitelist.map(x => `<div style="background:#002;padding:20px;margin:15px;border-radius:20px;font-size:22px">${x} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(y=>y!=='${x}');localStorage.setItem('vercel_giveaway',JSON.stringify(whitelist));updateWL()">Hapus</button></div>`).join('');
+}
+
+function roll() {
+    if (participants.length === 0) return alert("Belum ada peserta bro!");
+    const w = participants[Math.floor(Math.random() * participants.length)];
+    document.getElementById("wn").textContent = w;
+    document.getElementById("win").classList.remove("hidden");
+    confetti({particleCount: 1000, spread: 120, origin: {y: 0.5}});
+    fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`, {
+        method: "POST",
+        headers: {Authorization: "Bearer " + token, "Content-Type": "application/json"},
+        body: JSON.stringify({content: `@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET GUE KASIH SALUT BESAR BUAT KAMU!!!`})
+    });
+    log(`<b style="color:gold;font-size:4rem">PEMENANG: @${w} — SUDAH DIANNOUNCED + CONFETTI GILA!</b>`);
+}
+
+updateWL();
+</script>
+</body>
+</html>
