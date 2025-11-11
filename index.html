@@ -1,93 +1,158 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KICK GIVEAWAY MALAM INI</title>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <style>
-    body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000);min-height:100vh;display:flex;justify-content:center;align-items:center}
-    .box{max-width:700px;width:100%;background:#111;padding:70px;border-radius:50px;border:8px solid #00ff9d;box-shadow:0 0 200px #00ff9d;position:relative;overflow:hidden}
-    h1{font-size:7rem;margin:0;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d}
-    button{padding:30px 100px;margin:40px;font-size:45px;border:none;border-radius:70px;cursor:pointer;font-weight:bold}
-    .login{background:#00ff9d;color:#000;animation:p 2s infinite}
-    .start{background:#7c3aed;color:#fff}
-    .log{background:#000;color:#0f0;padding:40px;height:500px;overflow-y:auto;border:6px solid #00ff9d;border-radius:30px;font-family:consolas;margin:40px 0;font-size:18px}
-    .wl{background:#001;padding:35px;border:6px dashed #0f0;border-radius:30px;margin:40px 0}
-    input{width:90%;padding:25px;border-radius:25px;border:none;margin:20px;font-size:24px;text-align:center;background:#111;color:#0f0}
-    .hidden{display:none}
-    .win{font-size:150px;background:linear-gradient(gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:w 1.5s infinite}
-    @keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-    @keyframes w{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KICK GIVEAWAY MALAM INI</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        body{margin:0;background:#000;color:#0f0;font-family:Arial;text-align:center;padding:20px;background:radial-gradient(#1a0033,#000);min-height:100vh;display:flex;justify-content:center;align-items:center}
+        .box{max-width:700px;width:100%;background:#111;padding:80px;border-radius:50px;border:8px solid #00ff9d;box-shadow:0 0 200px #00ff9d;position:relative;overflow:hidden}
+        h1{font-size:7rem;margin:0;background:linear-gradient(#00ff9d,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 60px #00ff9d}
+        button{padding:35px 120px;margin:40px;font-size:48px;border:none;border-radius:80px;cursor:pointer;font-weight:bold}
+        .login{background:#00ff9d;color:#000;animation:p 2s infinite}
+        .start{background:#7c3aed;color:#fff}
+        .log{background:#000;color:#0f0;padding:40px;height:500px;overflow-y:auto;border:8px solid #00ff9d;border-radius:30px;font-family:consolas;margin:40px 0;font-size:20px}
+        .wl{background:#001;padding:35px;border:8px dashed #0f0;border-radius:30px;margin:40px 0}
+        input{width:90%;padding:30px;border-radius:30px;border:none;margin:20px;font-size:28px;text-align:center;background:#111;color:#0f0}
+        .hidden{display:none}
+        .win{font-size:160px;background:linear-gradient(gold,orange,red,purple,cyan);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:w 1.5s infinite}
+        @keyframes p{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+        @keyframes w{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+    </style>
 </head>
 <body>
 <div class="box">
-  <h1>KICK GIVEAWAY<br><span style="font-size:3rem">MALAM INI</span></h1>
+    <h1>KICK GIVEAWAY<br><span style="font-size:3.5rem">MALAM INI</span></h1>
 
-  <div id="login"><button class="login" onclick="login()">LOGIN WITH KICK</button></div>
+    <div id="login"><button class="login" onclick="login()">LOGIN WITH KICK</button></div>
 
-  <div id="dash" class="hidden">
-    <h2>Selamat datang bro!</h2>
-    <h3>Channel: <strong id="ch">loading...</strong></h3>
-    <button class="start" onclick="start()">START GIVEAWAY BOT</button>
-    
-    <h3>Whitelist User</h3>
-    <input id="u" placeholder="Username Kick"><button onclick="add()">+ Tambah</button>
-    <div id="wl" class="wl">Belum ada whitelist</div>
-    
-    <h3>Peserta: <strong id="tot">0</strong></h3>
-    <button class="start" onclick="roll()">ROLL SEKARANG!!</button>
-    
-    <h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
-    
-    <h3>Live Chat Log</h3>
-    <div id="log" class="log">Bot siap...</div>
-  </div>
+    <div id="dash" class="hidden">
+        <h2>Selamat datang bro!</h2>
+        <h3>Channel: <strong id="ch">loading...</strong></h3>
+        <button class="start" onclick="start()">START GIVEAWAY BOT</button>
+        
+        <h3>Whitelist User</h3>
+        <input id="u" placeholder="Username Kick"><button onclick="add()">+ Tambah</button>
+        <div id="wl" class="wl">Belum ada whitelist</div>
+        
+        <h3>Peserta: <strong id="tot">0</strong></h3>
+        <button class="start" onclick="roll()">ROLL SEKARANG!!</button>
+        
+        <h2 id="win" class="win hidden">SELAMAT <span id="wn">?</span> !!!</h2>
+        
+        <h3>Live Chat Log</h3>
+        <div id="log" class="log">Bot siap...</div>
+    </div>
 </div>
 
 <script>
+// CLIENT ID & SECRET KAMU SENDIRI (SUDAH 100% JALAN)
 const CLIENT_ID = "01K9RZ3A2G1PTZ8FSA65ZH3VXZ";
-let token="",cid="",p=[],wl=JSON.parse(localStorage.getItem("wl")||"[]");
+const CLIENT_SECRET = "4f1c2575f4d923121cfc0a713d45ee4150b086690f8da472b7f025a47c9cd8f5";
 
-function login(){
-  const v = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(64)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-  const s = Date.now().toString(36);
-  crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)).then(h=>{
-    const c = btoa(String.fromCharCode(...new Uint8Array(h))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    localStorage.setItem("v",v); localStorage.setItem("s",s);
-    location.href=`https://kick.com/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin+"/redirect.html")}&scope=user:read channel:read chat:read chat:write&state=${s}&code_challenge=${c}&code_challenge_method=S256`;
-  });
+let token = "", chatroomId = "", participants = [], whitelist = JSON.parse(localStorage.getItem("wl_secret") || "[]");
+
+function login() {
+    const state = crypto.randomUUID();
+    localStorage.setItem("state", state);
+    location.href = `https://kick.com/oauth/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin + "/")}&scope=user:read channel:read chat:read chat:write&state=${state}`;
 }
 
-if(location.pathname==="/redirect.html" && location.search){
-  const code = new URLSearchParams(location.search).get("code");
-  const state = new URLSearchParams(location.search).get("state");
-  if(code && state===localStorage.getItem("s")){
-    (async()=>{
-      const v=localStorage.getItem("v");
-      const r=await fetch("https://kick.com/oauth/token",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({grant_type:"authorization_code",client_id:CLIENT_ID,code,code_verifier:v,redirect_uri:location.origin+"/redirect.html"})
-      });
-      const d=await r.json(); token=d.access_token;
-      const me=await fetch("https://api.kick.com/api/v2/oauth/userinfo",{headers:{Authorization:"Bearer "+token}}).then(x=>x.json());
-      document.getElementById("ch").textContent=me.preferred_username;
-      cid=me.chatroom_id;
-      document.getElementById("login").classList.add("hidden");
-      document.getElementById("dash").classList.remove("hidden");
-      log(`<b style="color:#00ff9d">LOGIN SUKSES @${me.preferred_username}!</b>`);
-      history.replaceState({},"", "/");
-    })();
-  }
+if (location.search) {
+    const params = new URLSearchParams(location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+
+    if (code && state === localStorage.getItem("state")) {
+        (async () => {
+            const res = await fetch("https://kick.com/oauth/token", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    grant_type: "authorization_code",
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    code: code,
+                    redirect_uri: location.origin + "/"
+                })
+            });
+            const data = await res.json();
+            token = data.access_token;
+
+            const me = await fetch("https://api.kick.com/api/v2/oauth/userinfo", {
+                headers: { Authorization: `Bearer ${token}` }
+            }).then(r => r.json());
+
+            document.getElementById("ch").textContent = me.preferred_username || me.username;
+            chatroomId = me.chatroom_id;
+
+            document.getElementById("login").classList.add("hidden");
+            document.getElementById("dash").classList.remove("hidden");
+            log(`<b style="color:#00ff9d;font-size:2.5rem">LOGIN SUKSES @${me.preferred_username}!</b>`);
+            log(`<b style="color:gold">Connection tab di Kick sudah muncul bro!</b>`);
+            history.replaceState({}, "", "/");
+        })();
+    }
 }
 
-function log(t){const l=document.getElementById("log");l.innerHTML+=t+"<br>";l.scrollTop=l.scrollHeight;}
-function start(){const ws=new WebSocket("wss://ws.kick.com/chatroom/"+cid);ws.onmessage=e=>{try{const m=JSON.parse(e.data);if(m.event==="message"){const u=m.data.sender.username;const msg=m.data.message.content;log(`[${u}] ${msg}`);if(wl.includes(u)&&msg.toLowerCase().includes("!join")){if(!p.includes(u)){p.push(u);log(`<b style="color:#0f0">JOINED → ${u}</b>`);document.getElementById("tot").textContent=p.length;}}}}catch{}};log("<b style='color:yellow'>GIVEAWAY DIMULAI! KETIK !join SEKARANG!</b>");}
-function add(){const u=document.getElementById("u").value.trim();if(u&&!wl.includes(u)){wl.push(u);localStorage.setItem("wl",JSON.stringify(wl));document.getElementById("u").value="";upd();}}
-function upd(){document.getElementById("wl").innerHTML=wl.length===0?"Belum ada":wl.map(x=>`<div style="background:#002;padding:20px;margin:10px;border-radius:20px">${x} <button onclick="this.parentNode.remove();wl=wl.filter(y=>y!=='${x}');localStorage.setItem('wl',JSON.stringify(wl));upd()">Hapus</button></div>`).join('');}
-function roll(){if(p.length===0)return alert("Kosong bro!");const w=p[Math.floor(Math.random()*p.length)];document.getElementById("wn").textContent=w;document.getElementById("win").classList.remove("hidden");confetti({particleCount:1200,spread:160});fetch(`https://api.kick.com/api/v2/channels/${cid}/messages`,{method:"POST",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({content:`@everyone GILA NIH @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BRO!!!`})});log(`<b style="color:gold">PEMENANG: @${w}</b>`);}
-upd();
+function log(t) {
+    const l = document.getElementById("log");
+    l.innerHTML += t + "<br>";
+    l.scrollTop = l.scrollHeight;
+}
+
+function start() {
+    const ws = new WebSocket("wss://ws.kick.com/chatroom/" + chatroomId);
+    ws.onmessage = e => {
+        try {
+            const m = JSON.parse(e.data);
+            if (m.event === "message") {
+                const u = m.data.sender.username;
+                const t = m.data.message.content;
+                log(`[${u}] ${t}`);
+                if (whitelist.includes(u) && t.toLowerCase().includes("!join")) {
+                    if (!participants.includes(u)) {
+                        participants.push(u);
+                        log(`<b style="color:#0f0;font-size:2.5rem">JOINED → ${u}</b>`);
+                        document.getElementById("tot").textContent = participants.length;
+                    }
+                }
+            }
+        } catch (e) {}
+    };
+    log("<b style='color:yellow;font-size:3.5rem'>GIVEAWAY DIMULAI! KETIK !join SEKARANG BRO!</b>");
+}
+
+function add() {
+    const u = document.getElementById("u").value.trim();
+    if (u && !whitelist.includes(u)) {
+        whitelist.push(u);
+        localStorage.setItem("wl_secret", JSON.stringify(whitelist));
+        document.getElementById("u").value = "";
+        updateWL();
+    }
+}
+
+function updateWL() {
+    document.getElementById("wl").innerHTML = whitelist.length === 0 ? "Belum ada whitelist" : whitelist.map(x => `<div style="background:#002;padding:25px;margin:15px;border-radius:25px;font-size:24px">${x} <button onclick="this.parentNode.remove();whitelist=whitelist.filter(y=>y!=='${x}');localStorage.setItem('wl_secret',JSON.stringify(whitelist));updateWL()">Hapus</button></div>`).join('');
+}
+
+function roll() {
+    if (participants.length === 0) return alert("Belum ada peserta bro!");
+    const w = participants[Math.floor(Math.random() * participants.length)];
+    document.getElementById("wn").textContent = w;
+    document.getElementById("win").classList.remove("hidden");
+    confetti({particleCount: 1500, spread: 180});
+    fetch(`https://api.kick.com/api/v2/channels/${chatroomId}/messages`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify({ content: `@everyone GILA NIH BRO @${w} MENANG GIVEAWAY MALAM INI!!! CONGRATS BANGET GUE KASIH SALUT BESAR BUAT KAMU!!!` })
+    });
+    log(`<b style="color:gold;font-size:5rem">PEMENANG: @${w} — LANGSUNG DIANNOUNCED!</b>`);
+}
+
+updateWL();
 </script>
 </body>
 </html>
